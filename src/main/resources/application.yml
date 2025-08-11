@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: NexusERP
+  profiles:
+    active: dev
+  datasource:
+    url:
+    username:
+    password:
+
+jwt:
+  secret: your_jwt_secret_string
