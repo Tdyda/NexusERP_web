@@ -1,0 +1,44 @@
+server:
+  port: 8081
+
+spring:
+  #  main:
+  #    allow-bean-definition-overriding: true
+  #    log-startup-info: true
+  config:
+    activate:
+      on-profile: dev
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+logging:
+  file:
+    name: logs/application.log
+  level:
+    root: INFO
+    pl.doublecodestudio.nexuserp: INFO
+    org.hibernate.sql: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
+#    org.springframework.beans.factory: TRACE
+
+radius:
+  url: jdbc:mysql://10.172.111.78:3306/NexusERP_test
+  username: tdyda
+  password: Online1234!
+  driver-class-name: com.mysql.cj.jdbc.Driver
+  ddl-auto: update
+  physical-naming-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+phmes:
+  url: jdbc:sqlserver://10.0.60.235\PHMESDB:49773;database=PHM-PRC;trustServerCertificate=true
+  username: perla_tdyda
+  password: E(JnIO+)*2Kd
+  driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  ddl-auto: none
+  physical-naming-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+jwt:
+  secret: BlIEgtRU3g+dlF2EtgWczWVwgx/d/oVElIpvOZ6TyhHvTIMEqFXG6iKO1xmX/vw5T4A=
