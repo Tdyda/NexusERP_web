@@ -37,6 +37,21 @@ public class MaterialRequest {
         this.items = null;
     }
 
+    public MaterialRequest withStatus(String newStatus) {
+        return MaterialRequest.create(
+                this.batchId,
+                this.stageId,
+                this.finalProductId,
+                this.finalProductName,
+                this.unitId,
+                newStatus,
+                this.shippingDate,
+                this.deliveryDate,
+                this.releaseDate,
+                this.items
+        );
+    }
+
     public static MaterialRequest create(
             String batchId,
             String stageId,
