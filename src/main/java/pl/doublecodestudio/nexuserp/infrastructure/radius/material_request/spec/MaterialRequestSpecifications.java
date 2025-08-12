@@ -1,4 +1,4 @@
-package pl.doublecodestudio.nexuserp.infrastructure.radius.material_request.persistence.spec;
+package pl.doublecodestudio.nexuserp.infrastructure.radius.material_request.spec;
 
 import io.micrometer.common.lang.Nullable;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -29,7 +29,7 @@ public class MaterialRequestSpecifications {
     );
 
     public Specification<JpaMaterialRequestEntity> build(List<Filter> filters) {
-        Filter forcedStatusFilter = new Filter("status", FilterOp.IN, List.of("NEW", "InProgress"));
+        Filter forcedStatusFilter = new Filter("status", FilterOp.IN, List.of("NEW"));
 
         List<Filter> allFilters = new ArrayList<>(filters != null ? filters : List.of());
         allFilters.add(forcedStatusFilter);
