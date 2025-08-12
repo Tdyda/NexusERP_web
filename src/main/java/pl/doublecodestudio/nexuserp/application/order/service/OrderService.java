@@ -12,6 +12,7 @@ import pl.doublecodestudio.nexuserp.domain.order.port.OrderRepository;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderDto;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.mapper.OrderMapperDto;
 
+import java.lang.reflect.Field;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -62,13 +63,16 @@ public class OrderService {
                         mr.getUnitId(),
                         Instant.now(),
                         command.getComment(),
-                        mr.getStatus(),
+                        "Oczekujące",
                         item.getClient(),
                         mr.getBatchId()
                 ))
                 .toList();
 
         List<Order> savedOrders = orderRepository.saveAll(orders);
+
+        MaterialRequest updatedMr = mr.withStatus("Closed");
+        materialRequestRepository.save(updatedMr);
 
         return savedOrders.stream().map(mapper::toDto).collect(Collectors.toList());
     }
@@ -97,7 +101,7 @@ public class OrderService {
 
                     List<Order> updatedGroup = ordersWithSameIndex.stream()
                             .map(order -> order.toBuilder()
-                                    .status("InProgress")
+                                    .status("W trakcie realizacji")
                                     .build())
                             .toList();
 

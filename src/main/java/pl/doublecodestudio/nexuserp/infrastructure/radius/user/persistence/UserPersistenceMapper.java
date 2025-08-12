@@ -1,9 +1,7 @@
 package pl.doublecodestudio.nexuserp.infrastructure.radius.user.persistence;
 
-import org.mapstruct.Context;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
+import pl.doublecodestudio.nexuserp.domain.role.entity.Role;
 import pl.doublecodestudio.nexuserp.domain.user.entity.User;
 import pl.doublecodestudio.nexuserp.infrastructure.radius.role.persistence.JpaRoleEntity;
 import pl.doublecodestudio.nexuserp.infrastructure.radius.role.persistence.RolePersistenceMapper;
@@ -16,7 +14,21 @@ import java.util.stream.Collectors;
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         uses = RolePersistenceMapper.class)
 public interface UserPersistenceMapper {
+    User toDomain(JpaUserEntity user);
 
+    default User toDomainWithRoles(JpaUserEntity entity, @Context RolePersistenceMapper roleMapper) {
+        Set<Role> roleDomain = entity.getRoles().stream()
+                .map(roleMapper::toEntity)
+                .collect(Collectors.toSet());
+
+        return User.create(
+                entity.getId(),
+                entity.getUsername(),
+                entity.getEmail(),
+                entity.getPassword(),
+                roleDomain
+        );
+    }
 
     @Mapping(target = "roles", ignore = true)
     JpaUserEntity toEntity(User domain);
