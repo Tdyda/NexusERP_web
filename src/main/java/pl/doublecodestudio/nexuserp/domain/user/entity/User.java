@@ -1,5 +1,6 @@
 package pl.doublecodestudio.nexuserp.domain.user.entity;
 
+import lombok.Builder;
 import lombok.Getter;
 import pl.doublecodestudio.nexuserp.domain.role.entity.Role;
 
@@ -8,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Getter
+@Builder(toBuilder = true)
 public class User {
     private final UUID id;
     private final String username;

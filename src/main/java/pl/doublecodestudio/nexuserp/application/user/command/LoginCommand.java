@@ -1,4 +1,4 @@
 package pl.doublecodestudio.nexuserp.application.user.command;
 
-public record LoginCommand() {
+public record LoginCommand(String email, String password) {
 }
