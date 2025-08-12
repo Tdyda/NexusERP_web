@@ -33,4 +33,10 @@ public class UserRepositoryImpl implements UserRepository {
     public List<User> findAll() {
         return List.of();
     }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return  repo.findByEmail(email)
+                .map(entity -> mapper.toDomainWithRoles(entity, roleMapper));
+    }
 }
