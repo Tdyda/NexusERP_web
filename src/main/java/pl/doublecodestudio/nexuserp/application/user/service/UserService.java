@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pl.doublecodestudio.nexuserp.domain.location.entity.Location;
+import pl.doublecodestudio.nexuserp.domain.location.port.LocationRepository;
 import pl.doublecodestudio.nexuserp.domain.role.entity.Role;
 import pl.doublecodestudio.nexuserp.domain.role.port.RoleRepository;
 import pl.doublecodestudio.nexuserp.domain.user.entity.User;
@@ -28,21 +30,23 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapperDto mapper;
     private final JwtService jwtService;
+    private final LocationRepository locations;
 
-    public User createUser(String email, String password, String userName, Set<String> roles) {
+    public User createUser(String email, String password, String userName, String locationCode, Set<String> roles) {
         UUID uuid = UUID.randomUUID();
         String encodedPassword = passwordEncoder.encode(password);
         Set<Role> roleSet = new HashSet<>();
 
-        roles.forEach(role -> {
-            log.info("Roles before mapping: {}", role);
-        });
+        Location loc = new Location(locationCode);
+        if (!locations.existsAndActive(loc)) {
+            throw new IllegalArgumentException("Location not active: " + locationCode);
+        }
 
         roles.forEach(role -> {
             roleRepository.findByName(role).ifPresent(roleSet::add);
         });
 
-        User user = User.create(uuid, userName, email, encodedPassword, roleSet);
+        User user = User.create(uuid, userName, email, encodedPassword, loc, roleSet);
 
         userRepository.save(user);
         return user;
@@ -68,7 +72,8 @@ public class UserService {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                roles
+                roles,
+                user.getLocation() == null ? null : user.getLocation().code()
         );
 
         return new LoginResponse(
@@ -79,11 +84,11 @@ public class UserService {
     }
 
     private class TokenGenerator {
-        private static final SecureRandom secureRandom = new SecureRandom(); // kryptograficzny RNG
+        private static final SecureRandom secureRandom = new SecureRandom();
         private static final Base64.Encoder base64Encoder = Base64.getUrlEncoder().withoutPadding();
 
         public static String generateRefreshToken() {
-            byte[] randomBytes = new byte[64]; // 64 bajty = 512 bitów
+            byte[] randomBytes = new byte[64];
             secureRandom.nextBytes(randomBytes);
             return base64Encoder.encodeToString(randomBytes);
         }

@@ -20,6 +20,7 @@ public class CreateUserCommandHandler {
                         command.getEmail(),
                         command.getPassword(),
                         command.getUsername(),
+                        command.getLocation(),
                         command.getRoles()
                 )
         );

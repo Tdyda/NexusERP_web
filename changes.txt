@@ -1,0 +1,418 @@
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/application/user/command/CreateUserCommand.java b/src/main/java/pl/doublecodestudio/nexuserp/application/user/command/CreateUserCommand.java
+index 045311b..65bd44b 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/application/user/command/CreateUserCommand.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/application/user/command/CreateUserCommand.java
+@@ -11,5 +11,6 @@ public class CreateUserCommand {
+     private String email;
+     private String password;
+     private String username;
++    private String location;
+     private Set<String> roles;
+ }
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/application/user/command/CreateUserCommandHandler.java b/src/main/java/pl/doublecodestudio/nexuserp/application/user/command/CreateUserCommandHandler.java
+index e686163..7ce5b01 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/application/user/command/CreateUserCommandHandler.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/application/user/command/CreateUserCommandHandler.java
+@@ -20,6 +20,7 @@ public class CreateUserCommandHandler {
+                         command.getEmail(),
+                         command.getPassword(),
+                         command.getUsername(),
++                        command.getLocation(),
+                         command.getRoles()
+                 )
+         );
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/application/user/service/UserService.java b/src/main/java/pl/doublecodestudio/nexuserp/application/user/service/UserService.java
+index 4a60679..9e3035f 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/application/user/service/UserService.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/application/user/service/UserService.java
+@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
+ import lombok.extern.slf4j.Slf4j;
+ import org.springframework.security.crypto.password.PasswordEncoder;
+ import org.springframework.stereotype.Service;
++import pl.doublecodestudio.nexuserp.domain.location.entity.Location;
++import pl.doublecodestudio.nexuserp.domain.location.port.LocationRepository;
+ import pl.doublecodestudio.nexuserp.domain.role.entity.Role;
+ import pl.doublecodestudio.nexuserp.domain.role.port.RoleRepository;
+ import pl.doublecodestudio.nexuserp.domain.user.entity.User;
+@@ -28,21 +30,23 @@ public class UserService {
+     private final PasswordEncoder passwordEncoder;
+     private final UserMapperDto mapper;
+     private final JwtService jwtService;
++    private final LocationRepository locations;
+ 
+-    public User createUser(String email, String password, String userName, Set<String> roles) {
++    public User createUser(String email, String password, String userName, String locationCode, Set<String> roles) {
+         UUID uuid = UUID.randomUUID();
+         String encodedPassword = passwordEncoder.encode(password);
+         Set<Role> roleSet = new HashSet<>();
+ 
+-        roles.forEach(role -> {
+-            log.info("Roles before mapping: {}", role);
+-        });
++        Location loc = new Location(locationCode);
++        if (!locations.existsAndActive(loc)) {
++            throw new IllegalArgumentException("Location not active: " + locationCode);
++        }
+ 
+         roles.forEach(role -> {
+             roleRepository.findByName(role).ifPresent(roleSet::add);
+         });
+ 
+-        User user = User.create(uuid, userName, email, encodedPassword, roleSet);
++        User user = User.create(uuid, userName, email, encodedPassword, loc, roleSet);
+ 
+         userRepository.save(user);
+         return user;
+@@ -68,7 +72,8 @@ public class UserService {
+                 user.getId(),
+                 user.getUsername(),
+                 user.getEmail(),
+-                roles
++                roles,
++                user.getLocation() == null ? null : user.getLocation().code()
+         );
+ 
+         return new LoginResponse(
+@@ -79,11 +84,11 @@ public class UserService {
+     }
+ 
+     private class TokenGenerator {
+-        private static final SecureRandom secureRandom = new SecureRandom(); // kryptograficzny RNG
++        private static final SecureRandom secureRandom = new SecureRandom();
+         private static final Base64.Encoder base64Encoder = Base64.getUrlEncoder().withoutPadding();
+ 
+         public static String generateRefreshToken() {
+-            byte[] randomBytes = new byte[64]; // 64 bajty = 512 bitów
++            byte[] randomBytes = new byte[64];
+             secureRandom.nextBytes(randomBytes);
+             return base64Encoder.encodeToString(randomBytes);
+         }
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/domain/location/entity/Location.java b/src/main/java/pl/doublecodestudio/nexuserp/domain/location/entity/Location.java
+index 6274a7c..9a0ac3f 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/domain/location/entity/Location.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/domain/location/entity/Location.java
+@@ -2,15 +2,19 @@ package pl.doublecodestudio.nexuserp.domain.location.entity;
+ 
+ import lombok.EqualsAndHashCode;
+ 
+-@EqualsAndHashCode
+-public final class LocationCode {
+-    private final String value;
++import com.fasterxml.jackson.annotation.JsonCreator;
++import com.fasterxml.jackson.annotation.JsonValue;
+ 
+-    private LocationCode(String value) {
+-        if (value == null || value.isBlank()) throw new IllegalArgumentException("LocationCode blank");
+-        this.value = value.toUpperCase();
++public record Location(String code) {
++    public Location {
++        if (code == null || code.isBlank()) {
++            throw new IllegalArgumentException("Location code must not be blank");
++        }
+     }
+-    public static LocationCode of(String code) { return new LocationCode(code); }
+-    public String value() { return value; }
+-    @Override public String toString() { return value; }
++
++    @JsonValue
++    public String json() { return code; }
++
++    @JsonCreator
++    public static Location of(String code) { return new Location(code); }
+ }
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/domain/location/port/LocationRepository.java b/src/main/java/pl/doublecodestudio/nexuserp/domain/location/port/LocationRepository.java
+index 770ca03..83df61d 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/domain/location/port/LocationRepository.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/domain/location/port/LocationRepository.java
+@@ -1,12 +1,12 @@
+ package pl.doublecodestudio.nexuserp.domain.location.port;
+ 
+-import pl.doublecodestudio.nexuserp.domain.location.entity.LocationCode;
++import pl.doublecodestudio.nexuserp.domain.location.entity.Location;
+ 
+ import java.util.Optional;
+ 
+-public interface LocationCatalogPort {
+-    boolean existsAndActive(LocationCode code);
+-    Optional<LocationInfo> find(LocationCode code); // np. code + label + group + sort
+-    record LocationInfo(String code, String label, String group, boolean active, int sortOrder) {}
++public interface LocationRepository {
++    boolean existsAndActive(Location code);
++    Optional<LocationInfo> find(Location code); // np. code + label + group + sort
++    record LocationInfo(String code, String label, boolean active, int sortOrder) {}
+ }
+ 
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/domain/user/entity/User.java b/src/main/java/pl/doublecodestudio/nexuserp/domain/user/entity/User.java
+index d75d08b..8ee4e85 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/domain/user/entity/User.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/domain/user/entity/User.java
+@@ -2,6 +2,7 @@ package pl.doublecodestudio.nexuserp.domain.user.entity;
+ 
+ import lombok.Builder;
+ import lombok.Getter;
++import pl.doublecodestudio.nexuserp.domain.location.entity.Location;
+ import pl.doublecodestudio.nexuserp.domain.role.entity.Role;
+ 
+ import java.util.HashSet;
+@@ -15,17 +16,19 @@ public class User {
+     private final String username;
+     private final String email;
+     private final String password;
++    private final Location location;
+     private final Set<Role> roles = new HashSet<>();
+ 
+-    private User(UUID id, String username, String email, String password) {
++    private User(UUID id, String username, String email, String password, Location location) {
+         this.id = id;
+         this.username = username;
+         this.email = email;
+         this.password = password;
++        this.location = location;
+     }
+ 
+-    public static User create(UUID id, String username, String email, String password, Set<Role> roles) {
+-        User user = new User(id, username, email, password);
++    public static User create(UUID id, String username, String email, String password, Location location, Set<Role> roles) {
++        User user = new User(id, username, email, password, location);
+         user.roles.addAll(roles);
+ 
+         return user;
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/location/persistence/JpaLocationEntity.java b/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/location/persistence/JpaLocationEntity.java
+index 29a1fde..027c2e5 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/location/persistence/JpaLocationEntity.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/location/persistence/JpaLocationEntity.java
+@@ -1,4 +1,28 @@
+ package pl.doublecodestudio.nexuserp.infrastructure.radius.location.persistence;
+ 
++import jakarta.persistence.Column;
++import jakarta.persistence.Entity;
++import jakarta.persistence.Id;
++import jakarta.persistence.Table;
++import lombok.Getter;
++import lombok.NoArgsConstructor;
++import lombok.Setter;
++
++@Entity
++@Table(name = "location_ref")
++@Getter
++@Setter
++@NoArgsConstructor
+ public class JpaLocationEntity {
++    @Id
++    @Column(length = 16)
++    private String code;
++
++    @Column(nullable = false)
++    private String label;
++
++    @Column(nullable = false)
++    private boolean active = true;
++
++    private Integer sortOrder;
+ }
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/location/persistence/JpaLocationRepository.java b/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/location/persistence/JpaLocationRepository.java
+index 24280d2..2b255ee 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/location/persistence/JpaLocationRepository.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/location/persistence/JpaLocationRepository.java
+@@ -1,4 +1,7 @@
+ package pl.doublecodestudio.nexuserp.infrastructure.radius.location.persistence;
+ 
+-public class JpaLocationRepository {
++import org.springframework.data.jpa.repository.JpaRepository;
++
++public interface JpaLocationRepository extends JpaRepository<JpaLocationEntity, String> {
++    boolean existsByCodeAndActiveIsTrue(String code);
+ }
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/location/persistence/LocationRepositoryImpl.java b/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/location/persistence/LocationRepositoryImpl.java
+index 2cea38e..dd003a3 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/location/persistence/LocationRepositoryImpl.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/location/persistence/LocationRepositoryImpl.java
+@@ -1,4 +1,31 @@
+ package pl.doublecodestudio.nexuserp.infrastructure.radius.location.persistence;
+ 
+-public interface LocationRepositoryImpl {
++import lombok.RequiredArgsConstructor;
++import org.springframework.stereotype.Repository;
++import pl.doublecodestudio.nexuserp.domain.location.entity.Location;
++import pl.doublecodestudio.nexuserp.domain.location.port.LocationRepository;
++
++import java.util.Optional;
++
++@Repository
++@RequiredArgsConstructor
++public class LocationRepositoryImpl implements LocationRepository {
++
++    private final JpaLocationRepository jpa;
++
++    @Override
++    public boolean existsAndActive(Location code) {
++        return jpa.existsByCodeAndActiveIsTrue(code.code());
++    }
++
++    @Override
++    public Optional<LocationInfo> find(Location code) {
++        return jpa.findById(code.code())
++                .map(e -> new LocationInfo(
++                        e.getCode(),
++                        e.getLabel(),
++                        e.isActive(),
++                        e.getSortOrder() == null ? 0 : e.getSortOrder()
++                ));
++    }
+ }
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/user/persistence/JpaUserEntity.java b/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/user/persistence/JpaUserEntity.java
+index d8e70a8..866e53e 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/user/persistence/JpaUserEntity.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/user/persistence/JpaUserEntity.java
+@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
+ import lombok.Getter;
+ import lombok.NoArgsConstructor;
+ import lombok.Setter;
++import pl.doublecodestudio.nexuserp.infrastructure.radius.location.persistence.JpaLocationEntity;
+ import pl.doublecodestudio.nexuserp.infrastructure.radius.role.persistence.JpaRoleEntity;
+ 
+ import java.util.HashSet;
+@@ -25,6 +26,14 @@ public class JpaUserEntity {
+     private String email;
+     private String password;
+ 
++    @Column(name = "location_code", nullable = false, length = 16)
++    private String locationCode;
++
++    @ManyToOne(fetch = FetchType.LAZY, optional = false)
++    @JoinColumn(name = "location_code", referencedColumnName = "code",
++            insertable = false, updatable = false)
++    private JpaLocationEntity locationRef;
++
+     @ManyToMany(fetch = FetchType.EAGER)
+     @JoinTable(
+             name = "user_roles",
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/user/persistence/UserPersistenceMapper.java b/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/user/persistence/UserPersistenceMapper.java
+index 7493ae3..33b6631 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/user/persistence/UserPersistenceMapper.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/user/persistence/UserPersistenceMapper.java
+@@ -1,9 +1,7 @@
+ package pl.doublecodestudio.nexuserp.infrastructure.radius.user.persistence;
+ 
+-import org.mapstruct.Context;
+-import org.mapstruct.Mapper;
+-import org.mapstruct.Mapping;
+-import org.mapstruct.ReportingPolicy;
++import org.mapstruct.*;
++import pl.doublecodestudio.nexuserp.domain.location.entity.Location;
+ import pl.doublecodestudio.nexuserp.domain.role.entity.Role;
+ import pl.doublecodestudio.nexuserp.domain.user.entity.User;
+ import pl.doublecodestudio.nexuserp.infrastructure.radius.role.persistence.JpaRoleEntity;
+@@ -17,7 +15,7 @@ import java.util.stream.Collectors;
+         unmappedTargetPolicy = ReportingPolicy.ERROR,
+         uses = RolePersistenceMapper.class)
+ public interface UserPersistenceMapper {
+-    User toDomain(JpaUserEntity user);
++//    User toDomain(JpaUserEntity user);
+ 
+     default User toDomainWithRoles(JpaUserEntity entity, @Context RolePersistenceMapper roleMapper) {
+         Set<Role> roleDomain = entity.getRoles().stream()
+@@ -29,22 +27,30 @@ public interface UserPersistenceMapper {
+                 entity.getUsername(),
+                 entity.getEmail(),
+                 entity.getPassword(),
++                toLocation(entity.getLocationCode()),
+                 roleDomain
+         );
+     }
+ 
+-    @Mapping(target = "roles", ignore = true)
++    @Mappings({
++            @Mapping(target = "roles", ignore = true),
++            @Mapping(target = "locationRef", ignore = true),
++            @Mapping(target = "locationCode", source = "location", qualifiedByName = "locToCode")
++    })
+     JpaUserEntity toEntity(User domain);
+ 
+     default JpaUserEntity toEntityWithRoles(User domain, @Context RolePersistenceMapper roleMapper) {
+         JpaUserEntity entity = toEntity(domain);
+-
+         Set<JpaRoleEntity> roleEntities = domain.getRoles().stream()
+                 .map(roleMapper::toJpaRole)
+                 .collect(Collectors.toSet());
+-
+         entity.setRoles(roleEntities);
+-
+         return entity;
+     }
++
++    // --- konwersje pomocnicze ---
++    @Named("locToCode")
++    default String locToCode(Location loc) { return loc == null ? null : loc.code(); }
++
++    default Location toLocation(String code) { return code == null ? null : new Location(code); }
+ }
+\ No newline at end of file
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/user/persistence/UserRepositoryImpl.java b/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/user/persistence/UserRepositoryImpl.java
+index 14700fa..897a430 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/user/persistence/UserRepositoryImpl.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/infrastructure/radius/user/persistence/UserRepositoryImpl.java
+@@ -3,6 +3,7 @@ package pl.doublecodestudio.nexuserp.infrastructure.radius.user.persistence;
+ import lombok.RequiredArgsConstructor;
+ import lombok.extern.slf4j.Slf4j;
+ import org.springframework.stereotype.Repository;
++import pl.doublecodestudio.nexuserp.domain.location.port.LocationRepository;
+ import pl.doublecodestudio.nexuserp.domain.user.entity.User;
+ import pl.doublecodestudio.nexuserp.domain.user.port.UserRepository;
+ import pl.doublecodestudio.nexuserp.infrastructure.radius.role.persistence.RolePersistenceMapper;
+@@ -18,9 +19,13 @@ public class UserRepositoryImpl implements UserRepository {
+     private final JpaUserRepository repo;
+     private final UserPersistenceMapper mapper;
+     private final RolePersistenceMapper roleMapper;
++    private final LocationRepository locations;
+ 
+     @Override
+     public void save(User user) {
++        if (!locations.existsAndActive(user.getLocation())) {
++            throw new IllegalArgumentException("Location not active or unknown: " + user.getLocation().code());
++        }
+         repo.save(mapper.toEntityWithRoles(user, roleMapper));
+     }
+ 
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/interfaces/web/user/dto/UserDto.java b/src/main/java/pl/doublecodestudio/nexuserp/interfaces/web/user/dto/UserDto.java
+index bfd8ebd..1e9cb3f 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/interfaces/web/user/dto/UserDto.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/interfaces/web/user/dto/UserDto.java
+@@ -13,6 +13,7 @@ import java.util.UUID;
+ public class UserDto {
+     private UUID uuid;
+     private String email;
+-    private String userName;
++    private String username;
+     private Set<String> roles;
++    private String locationCode;
+ }
+diff --git a/src/main/java/pl/doublecodestudio/nexuserp/interfaces/web/user/mapper/UserMapperDto.java b/src/main/java/pl/doublecodestudio/nexuserp/interfaces/web/user/mapper/UserMapperDto.java
+index 75b4538..2dee78a 100644
+--- a/src/main/java/pl/doublecodestudio/nexuserp/interfaces/web/user/mapper/UserMapperDto.java
++++ b/src/main/java/pl/doublecodestudio/nexuserp/interfaces/web/user/mapper/UserMapperDto.java
+@@ -2,6 +2,7 @@ package pl.doublecodestudio.nexuserp.interfaces.web.user.mapper;
+ 
+ import org.mapstruct.Mapper;
+ import org.mapstruct.Mapping;
++import pl.doublecodestudio.nexuserp.domain.location.entity.Location;
+ import pl.doublecodestudio.nexuserp.domain.role.entity.Role;
+ import pl.doublecodestudio.nexuserp.domain.user.entity.User;
+ import pl.doublecodestudio.nexuserp.interfaces.web.user.dto.UserDto;
+@@ -14,6 +15,7 @@ public interface UserMapperDto {
+ 
+     @Mapping(source = "id", target = "uuid")
+     @Mapping(source = "roles", target = "roles")
++    @Mapping(source = "location", target = "locationCode")
+     UserDto toDto(User user);
+ 
+     default Set<String> map(Set<Role> roles) {
+@@ -22,4 +24,8 @@ public interface UserMapperDto {
+                 .map(Role::getName)
+                 .collect(Collectors.toSet());
+     }
++
++     default String map(Location location) {
++         return location == null ? null : location.code();
++     }
+ }

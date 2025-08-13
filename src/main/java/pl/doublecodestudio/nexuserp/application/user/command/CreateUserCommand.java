@@ -11,5 +11,6 @@ public class CreateUserCommand {
     private String email;
     private String password;
     private String username;
+    private String location;
     private Set<String> roles;
 }

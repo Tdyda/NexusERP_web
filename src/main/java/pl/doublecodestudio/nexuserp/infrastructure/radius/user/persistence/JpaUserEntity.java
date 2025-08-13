@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.doublecodestudio.nexuserp.infrastructure.radius.location.persistence.JpaLocationEntity;
 import pl.doublecodestudio.nexuserp.infrastructure.radius.role.persistence.JpaRoleEntity;
 
 import java.util.HashSet;
@@ -24,6 +25,14 @@ public class JpaUserEntity {
     private String username;
     private String email;
     private String password;
+
+    @Column(name = "location_code", nullable = false, length = 16)
+    private String locationCode;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "location_code", referencedColumnName = "code",
+            insertable = false, updatable = false)
+    private JpaLocationEntity locationRef;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

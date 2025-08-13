@@ -2,6 +2,7 @@ package pl.doublecodestudio.nexuserp.domain.user.entity;
 
 import lombok.Builder;
 import lombok.Getter;
+import pl.doublecodestudio.nexuserp.domain.location.entity.Location;
 import pl.doublecodestudio.nexuserp.domain.role.entity.Role;
 
 import java.util.HashSet;
@@ -15,17 +16,19 @@ public class User {
     private final String username;
     private final String email;
     private final String password;
+    private final Location location;
     private final Set<Role> roles = new HashSet<>();
 
-    private User(UUID id, String username, String email, String password) {
+    private User(UUID id, String username, String email, String password, Location location) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
+        this.location = location;
     }
 
-    public static User create(UUID id, String username, String email, String password, Set<Role> roles) {
-        User user = new User(id, username, email, password);
+    public static User create(UUID id, String username, String email, String password, Location location, Set<Role> roles) {
+        User user = new User(id, username, email, password, location);
         user.roles.addAll(roles);
 
         return user;
