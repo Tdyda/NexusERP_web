@@ -21,4 +21,6 @@ public interface OrderRepository {
     List<Order> findByStatus(String status);
 
     List<Order> findByStatusAndIndex(String status, String index);
+
+    List<Order> findByLocation(String location, Pageable pageable);
 }

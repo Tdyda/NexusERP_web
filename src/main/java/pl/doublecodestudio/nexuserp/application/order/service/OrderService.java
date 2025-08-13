@@ -2,6 +2,7 @@ package pl.doublecodestudio.nexuserp.application.order.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pl.doublecodestudio.nexuserp.application.order.command.CreateOrderCommand;
 import pl.doublecodestudio.nexuserp.application.order.command.ProcessPendingOrdersCommand;
@@ -17,10 +18,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -179,5 +178,26 @@ public class OrderService {
         orderRepository.saveAll(updatedOrders);
 
         return updatedOrders.stream().map(mapper::toDto).toList();
+    }
+
+    public List<OrderDto> getAllOrdersByLocationAndStatus(String location, Pageable pageable) {
+        Map<String, OrderDto> byIndex = orderRepository.findByLocation(location, pageable).stream()
+                .filter(o -> !Objects.equals(o.getStatus(), "Zamknięte"))
+                .map(mapper::toDto)
+                // jeśli index może być null, odfiltruj:
+                // .filter(dto -> dto.getIndex() != null)
+                .collect(Collectors.toMap(
+                        OrderDto::getIndex,
+                        Function.identity(),
+                        (a, b) -> {
+                            double aQty = a.getQuantity() != null ? a.getQuantity() : 0.0;
+                            double bQty = b.getQuantity() != null ? b.getQuantity() : 0.0;
+                            a.setQuantity(aQty + bQty);
+                            return a;
+                        },
+                        LinkedHashMap::new
+                ));
+
+        return new ArrayList<>(byIndex.values());
     }
 }

@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import pl.doublecodestudio.nexuserp.application.order.command.*;
 import pl.doublecodestudio.nexuserp.application.order.query.GetOrderByIndexQuery;
 import pl.doublecodestudio.nexuserp.application.order.query.GetOrderByIndexQueryHandler;
+import pl.doublecodestudio.nexuserp.application.order.query.GetOrderByLocation;
+import pl.doublecodestudio.nexuserp.application.order.query.GetOrderByLocationHandler;
+import pl.doublecodestudio.nexuserp.domain.order.entity.Order;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderDto;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderSummaryDto;
 
@@ -23,6 +26,7 @@ public class OrderController {
     private final ProcessPendingOrdersCommandHandler processPendingOrdersCommandHandler;
     private final GetOrderByIndexQueryHandler getOrderByIndexQueryHandler;
     private final UpdateStatusCommandHandler updateStatusCommandHandler;
+    private final GetOrderByLocationHandler getOrderByLocationHandler;
 
     @PostMapping
     public ResponseEntity<List<OrderDto>> create(@RequestBody CreateOrderCommand command) {
@@ -36,12 +40,20 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(orderDtos);
     }
 
-    @GetMapping
+    @GetMapping(params = {"index", "!location"})
     public ResponseEntity<List<OrderDto>> findByIndex(@RequestParam String index, Pageable pageable) {
         GetOrderByIndexQuery query = new GetOrderByIndexQuery(pageable, index);
         List<OrderDto> orderDtos = getOrderByIndexQueryHandler.handle(query);
 
         return ResponseEntity.status(HttpStatus.OK).body(orderDtos);
+    }
+
+    @GetMapping(params = {"!index", "location"})
+    public ResponseEntity<List<OrderDto>> findByLocation(@RequestParam String location, Pageable pageable) {
+        GetOrderByLocation query = new GetOrderByLocation(location, pageable);
+        List<OrderDto> orders = getOrderByLocationHandler.handle(query);
+
+        return ResponseEntity.status(HttpStatus.OK).body(orders);
     }
 
     @PutMapping

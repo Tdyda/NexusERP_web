@@ -2,6 +2,7 @@ package pl.doublecodestudio.nexuserp.infrastructure.radius.order.persistence;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import pl.doublecodestudio.nexuserp.domain.order.entity.Order;
 
 import java.time.Instant;
 import java.util.List;
@@ -19,4 +20,6 @@ public interface JpaOrderRepository extends JpaRepository<JpaOrderEntity, Long> 
     List<JpaOrderEntity> findByStatusAndOrderDateLessThanEqual(String status, Instant orderDate);
 
     List<JpaOrderEntity> findByStatusAndIndex(String status, String index);
+
+    List<JpaOrderEntity> findByProdLine(String prodLine, Pageable pageable);
 }

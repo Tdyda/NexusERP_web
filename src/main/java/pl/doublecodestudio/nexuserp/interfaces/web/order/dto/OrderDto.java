@@ -1,10 +1,7 @@
 package pl.doublecodestudio.nexuserp.interfaces.web.order.dto;
 
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.Instant;
 
