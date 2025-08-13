@@ -1,13 +1,8 @@
 package pl.doublecodestudio.nexuserp.infrastructure.radius.role.persistence;
 
-import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 import pl.doublecodestudio.nexuserp.domain.role.entity.Role;
-import pl.doublecodestudio.nexuserp.interfaces.web.role.dto.RoleDto;
-
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface RolePersistenceMapper {

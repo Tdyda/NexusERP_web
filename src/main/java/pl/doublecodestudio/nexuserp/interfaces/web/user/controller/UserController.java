@@ -28,7 +28,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginCommand command) {
-            LoginResponse response = loginCommandHandler.handle(command);
+        LoginResponse response = loginCommandHandler.handle(command);
         return ResponseEntity.ok(response);
     }
 }

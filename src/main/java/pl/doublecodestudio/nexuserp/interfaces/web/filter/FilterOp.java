@@ -15,7 +15,9 @@ public enum FilterOp {
 
     private final String code;
 
-    FilterOp(String code) { this.code = code; }
+    FilterOp(String code) {
+        this.code = code;
+    }
 
     public static Optional<FilterOp> from(String code) {
         return Arrays.stream(values()).filter(f -> f.code.equalsIgnoreCase(code)).findFirst();

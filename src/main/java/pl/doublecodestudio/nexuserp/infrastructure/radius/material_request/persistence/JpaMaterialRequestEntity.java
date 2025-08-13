@@ -46,4 +46,7 @@ public class JpaMaterialRequestEntity {
 
     @OneToMany(mappedBy = "materialRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JpaMaterialRequestItemEntity> items = new ArrayList<>();
+
+    @Column(name = "Client", nullable = false)
+    private String client;
 }

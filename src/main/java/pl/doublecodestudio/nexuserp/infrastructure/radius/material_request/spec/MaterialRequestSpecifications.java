@@ -25,7 +25,8 @@ public class MaterialRequestSpecifications {
             Map.entry("status", "status"),
             Map.entry("shippingDate", "shippingDate"),
             Map.entry("deliveryDate", "deliveryDate"),
-            Map.entry("releaseDate", "releaseDate")
+            Map.entry("releaseDate", "releaseDate"),
+            Map.entry("client", "client")
     );
 
     public Specification<JpaMaterialRequestEntity> build(List<Filter> filters) {
@@ -110,7 +111,7 @@ public class MaterialRequestSpecifications {
         };
     }
 
-    private enum CompareOp { GT, GTE, LT, LTE }
+    private enum CompareOp {GT, GTE, LT, LTE}
 
     private Predicate buildCompare(CriteriaBuilder cb, Path<?> path, Class<?> type, String raw, CompareOp op) {
         if (Instant.class.equals(type)) {
@@ -147,7 +148,9 @@ public class MaterialRequestSpecifications {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> Path<T> cast(Path<?> p) { return (Path<T>) p; }
+    private static <T> Path<T> cast(Path<?> p) {
+        return (Path<T>) p;
+    }
 
     private Object convert(Class<?> type, String raw) {
         if (raw == null) return null;
@@ -160,8 +163,6 @@ public class MaterialRequestSpecifications {
         // w razie czego:
         return raw;
     }
-
-
 
 
     public static Specification<JpaMaterialRequestEntity> hasStatus(@Nullable String status) {

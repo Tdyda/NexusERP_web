@@ -12,7 +12,6 @@ import pl.doublecodestudio.nexuserp.domain.order.port.OrderRepository;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderDto;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.mapper.OrderMapperDto;
 
-import java.lang.reflect.Field;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,6 +19,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -122,7 +122,13 @@ public class OrderService {
                     dto.setName(ordersWithSameIndex.get(0).getName());
 
                     dto.setBatchId(ordersWithSameIndex.get(0).getBatchId());
-                    dto.setHasComment(ordersWithSameIndex.stream().anyMatch(x -> x.getComment().isEmpty()));
+                    dto.setHasComment(
+                            ordersWithSameIndex.stream()
+                                    .anyMatch(x -> Optional.ofNullable(x.getComment())
+                                            .filter(c -> !c.isEmpty())
+                                            .isPresent())
+                    );
+
                     dto.setOrderDate(ordersWithSameIndex.stream()
                             .map(Order::getOrderDate)
                             .min(Comparator.naturalOrder())

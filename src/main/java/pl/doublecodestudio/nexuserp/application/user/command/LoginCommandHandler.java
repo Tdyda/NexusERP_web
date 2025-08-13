@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import pl.doublecodestudio.nexuserp.application.user.service.UserService;
 import pl.doublecodestudio.nexuserp.interfaces.web.user.dto.LoginResponse;
-import pl.doublecodestudio.nexuserp.interfaces.web.user.dto.UserDto;
 
 @Component
 @RequiredArgsConstructor

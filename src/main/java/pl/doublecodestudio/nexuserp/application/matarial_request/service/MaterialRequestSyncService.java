@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class MaterialRequestSyncService {
     private final MaterialRequestRepository materialRequestRepository;
     private final MaterialDemandKittingRepository materialDemandKittingRepository;
@@ -29,12 +28,6 @@ public class MaterialRequestSyncService {
         List<MaterialDemandKitting> recentDemands = getRecentMaterialDemands();
         Set<String> existingBatchIds = getExistingBatchIds();
         List<MaterialRequest> newRequests = generateNewRequests(recentDemands, existingBatchIds);
-
-        newRequests.forEach(materialRequest ->
-                materialRequest.getItems().forEach(item ->
-                        log.info("material request batchId: {}, material request materialId: {}",
-                                materialRequest.getBatchId(), item.getMaterialId()))
-        );
 
         if (!newRequests.isEmpty()) {
             materialRequestRepository.saveAll(newRequests);
@@ -84,7 +77,8 @@ public class MaterialRequestSyncService {
                 baseRequest.getShippingDate(),
                 baseRequest.getDeliveryDate(),
                 baseRequest.getReleaseDate(),
-                items
+                items,
+                baseRequest.getClient()
         );
     }
 

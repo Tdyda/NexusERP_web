@@ -52,14 +52,15 @@ public class UserService {
         User user = userRepository.findByEmail(email).orElseThrow(IllegalArgumentException::new);
         boolean login = passwordEncoder.matches(password, user.getPassword());
 
-        if(!login)
-        {
+        if (!login) {
             throw new IllegalArgumentException("Wrong password");
         }
 
         Set<String> roles = new HashSet<>();
         user.getRoles().forEach(role -> roles.add(role.getName()));
-        roles.forEach(role -> {log.info("Roles: {}", role);});
+        roles.forEach(role -> {
+            log.info("Roles: {}", role);
+        });
 
         String refreshToken = TokenGenerator.generateRefreshToken();
 

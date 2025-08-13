@@ -23,12 +23,11 @@ public class CreateUserCommandHandler {
                         command.getRoles()
                 )
         );
-        if(!user.getRoles().isEmpty()) {
+        if (!user.getRoles().isEmpty()) {
             user.getRoles().forEach(role -> {
                 log.info("Creating user with role {}", role);
             });
-        }
-        else {
+        } else {
             log.info("Creating user with empty roles");
         }
 

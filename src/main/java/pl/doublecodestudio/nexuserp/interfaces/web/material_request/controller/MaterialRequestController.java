@@ -45,8 +45,7 @@ public class MaterialRequestController {
     }
 
     @GetMapping("/{batchId}")
-    public ResponseEntity<MaterialRequest> getByBatchId(@PathVariable String batchId)
-    {
+    public ResponseEntity<MaterialRequest> getByBatchId(@PathVariable String batchId) {
         MaterialRequest mr =
                 getMaterialRequestByBatchIdQueryHandler.handle(new GetMaterialRequestByBatchIdQuery(batchId));
 

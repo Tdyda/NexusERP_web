@@ -23,6 +23,7 @@ public class MaterialRequest {
     private final Instant deliveryDate;
     private final Instant releaseDate;
     private final List<MaterialRequestItem> items;
+    private final String client;
 
     private MaterialRequest() {
         this.batchId = null;
@@ -35,6 +36,7 @@ public class MaterialRequest {
         this.deliveryDate = null;
         this.releaseDate = null;
         this.items = null;
+        this.client = null;
     }
 
     public MaterialRequest withStatus(String newStatus) {
@@ -48,7 +50,8 @@ public class MaterialRequest {
                 this.shippingDate,
                 this.deliveryDate,
                 this.releaseDate,
-                this.items
+                this.items,
+                this.client
         );
     }
 
@@ -62,7 +65,8 @@ public class MaterialRequest {
             Instant shippingDate,
             Instant deliveryDate,
             Instant releaseDate,
-            List<MaterialRequestItem> items
+            List<MaterialRequestItem> items,
+            String client
     ) {
         if (batchId == null || batchId.isEmpty()) {
             throw new IllegalArgumentException("batchId cannot be null or empty");
@@ -94,6 +98,9 @@ public class MaterialRequest {
         if (items == null) {
             throw new IllegalArgumentException("items cannot be null");
         }
+        if (client == null || client.isEmpty()) {
+            throw new IllegalArgumentException("client cannot be null or empty");
+        }
 
         return MaterialRequest.builder()
                 .batchId(batchId)
@@ -106,6 +113,7 @@ public class MaterialRequest {
                 .deliveryDate(deliveryDate)
                 .releaseDate(releaseDate)
                 .items(items)
+                .client(client)
                 .build();
     }
 }

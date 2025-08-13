@@ -1,6 +1,9 @@
 package pl.doublecodestudio.nexuserp.infrastructure.radius.user.persistence;
 
-import org.mapstruct.*;
+import org.mapstruct.Context;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 import pl.doublecodestudio.nexuserp.domain.role.entity.Role;
 import pl.doublecodestudio.nexuserp.domain.user.entity.User;
 import pl.doublecodestudio.nexuserp.infrastructure.radius.role.persistence.JpaRoleEntity;

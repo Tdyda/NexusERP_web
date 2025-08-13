@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import pl.doublecodestudio.nexuserp.domain.material_request.entity.MaterialRequest;
 import pl.doublecodestudio.nexuserp.domain.material_request.port.MaterialRequestRepository;
-import pl.doublecodestudio.nexuserp.interfaces.web.material_demand.kitting.dto.MaterialDemandKittingDto;
 
 @Component
 @RequiredArgsConstructor

@@ -6,9 +6,6 @@ import pl.doublecodestudio.nexuserp.domain.material_request.entity.MaterialReque
 import pl.doublecodestudio.nexuserp.domain.material_request.port.MaterialRequestRepository;
 import pl.doublecodestudio.nexuserp.interfaces.web.page.PageResult;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 public class GetMaterialRequestQueryHandler {
