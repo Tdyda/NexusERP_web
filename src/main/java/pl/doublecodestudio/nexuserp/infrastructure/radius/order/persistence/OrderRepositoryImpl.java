@@ -53,6 +53,13 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
+    public List<Order> findByStatus(String status) {
+        return repo.findByStatus(status).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<Order> findByStatusAndIndex(String status, String index) {
         return repo.findByStatusAndIndex(status, index).stream()
                 .map(mapper::toDomain)

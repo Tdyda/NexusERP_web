@@ -143,8 +143,8 @@ public class OrderService {
                 .collect(Collectors.toList());
         orderRepository.saveAll(updatedOrders);
 
-        List<OrderSummaryDto> summaries = orderRepository
-                .findByStatusAndOrderDateLessThanEqual("W trakcie realizacji", instant)
+        return orderRepository
+                .findByStatus("W trakcie realizacji")
                 .stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toMap(
@@ -157,20 +157,16 @@ public class OrderService {
                                 .name(dto.getName())
                                 .quantity(dto.getQuantity() == null ? 0d : dto.getQuantity())
                                 .build(),
-                        (a, b) -> { // łączenie dwóch rekordów o tym samym index
-                            a.setQuantity(a.getQuantity() + b.getQuantity()); // suma
-                            a.setOrderDate(a.getOrderDate().isBefore(b.getOrderDate()) ? a.getOrderDate() : b.getOrderDate()); // najstarszy
-                            a.setHasComment(a.isHasComment() || b.isHasComment()); // OR
-                            // name zostaje z 'a' (pierwszy)
-                            // status już ustawiony na stałe
+                        (a, b) -> {
+                            a.setQuantity(a.getQuantity() + b.getQuantity());
+                            a.setOrderDate(a.getOrderDate().isBefore(b.getOrderDate()) ? a.getOrderDate() : b.getOrderDate());
+                            a.setHasComment(a.isHasComment() || b.isHasComment());
                             return a;
                         }
                 ))
                 .values()
                 .stream()
                 .toList();
-
-        return summaries;
     }
 
     public List<OrderDto> updateStatus(String index, String oldStatus, String newStatus) {

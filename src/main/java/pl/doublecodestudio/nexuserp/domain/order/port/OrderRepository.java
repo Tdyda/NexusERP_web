@@ -18,5 +18,7 @@ public interface OrderRepository {
 
     List<Order> findByStatusAndOrderDateLessThanEqual(String status, Instant time);
 
+    List<Order> findByStatus(String status);
+
     List<Order> findByStatusAndIndex(String status, String index);
 }
