@@ -10,6 +10,7 @@ import pl.doublecodestudio.nexuserp.application.order.command.*;
 import pl.doublecodestudio.nexuserp.application.order.query.GetOrderByIndexQuery;
 import pl.doublecodestudio.nexuserp.application.order.query.GetOrderByIndexQueryHandler;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderDto;
+import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderSummaryDto;
 
 import java.util.List;
 
@@ -30,8 +31,8 @@ public class OrderController {
     }
 
     @PostMapping("/process-pending")
-    public ResponseEntity<List<OrderDto>> processPendingOrders(@RequestBody ProcessPendingOrdersCommand command) {
-        List<OrderDto> orderDtos = processPendingOrdersCommandHandler.handle(command);
+    public ResponseEntity<List<OrderSummaryDto>> processPendingOrders(@RequestBody ProcessPendingOrdersCommand command) {
+        List<OrderSummaryDto> orderDtos = processPendingOrdersCommandHandler.handle(command);
         return ResponseEntity.status(HttpStatus.OK).body(orderDtos);
     }
 

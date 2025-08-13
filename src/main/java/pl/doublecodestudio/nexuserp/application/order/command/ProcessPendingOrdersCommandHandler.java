@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import pl.doublecodestudio.nexuserp.application.order.service.OrderService;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderDto;
+import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderSummaryDto;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ import java.util.List;
 public class ProcessPendingOrdersCommandHandler {
     private final OrderService orderService;
 
-    public List<OrderDto> handle(ProcessPendingOrdersCommand command) {
+    public List<OrderSummaryDto> handle(ProcessPendingOrdersCommand command) {
         return orderService.updateOrder(command);
     }
 }

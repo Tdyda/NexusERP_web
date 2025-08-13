@@ -10,6 +10,7 @@ import pl.doublecodestudio.nexuserp.domain.material_request.port.MaterialRequest
 import pl.doublecodestudio.nexuserp.domain.order.entity.Order;
 import pl.doublecodestudio.nexuserp.domain.order.port.OrderRepository;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderDto;
+import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderSummaryDto;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.mapper.OrderMapperDto;
 
 import java.time.Instant;
@@ -77,7 +78,7 @@ public class OrderService {
         return savedOrders.stream().map(mapper::toDto).collect(Collectors.toList());
     }
 
-    public List<OrderDto> updateOrder(ProcessPendingOrdersCommand command) {
+    public List<OrderSummaryDto> updateOrder(ProcessPendingOrdersCommand command) {
         log.info("command status: {}", command.getStatus());
 
         LocalDate localDate = LocalDate.now();
@@ -139,9 +140,37 @@ public class OrderService {
 
                     return dto;
                 })
-                .toList();
+                .collect(Collectors.toList());
         orderRepository.saveAll(updatedOrders);
-        return result;
+
+        List<OrderSummaryDto> summaries = orderRepository
+                .findByStatusAndOrderDateLessThanEqual("W trakcie realizacji", instant)
+                .stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toMap(
+                        OrderDto::getIndex,
+                        dto -> OrderSummaryDto.builder()
+                                .index(dto.getIndex())
+                                .orderDate(dto.getOrderDate())
+                                .status("W trakcie realizacji")
+                                .hasComment(dto.isHasComment())
+                                .name(dto.getName())
+                                .quantity(dto.getQuantity() == null ? 0d : dto.getQuantity())
+                                .build(),
+                        (a, b) -> { // łączenie dwóch rekordów o tym samym index
+                            a.setQuantity(a.getQuantity() + b.getQuantity()); // suma
+                            a.setOrderDate(a.getOrderDate().isBefore(b.getOrderDate()) ? a.getOrderDate() : b.getOrderDate()); // najstarszy
+                            a.setHasComment(a.isHasComment() || b.isHasComment()); // OR
+                            // name zostaje z 'a' (pierwszy)
+                            // status już ustawiony na stałe
+                            return a;
+                        }
+                ))
+                .values()
+                .stream()
+                .toList();
+
+        return summaries;
     }
 
     public List<OrderDto> updateStatus(String index, String oldStatus, String newStatus) {
