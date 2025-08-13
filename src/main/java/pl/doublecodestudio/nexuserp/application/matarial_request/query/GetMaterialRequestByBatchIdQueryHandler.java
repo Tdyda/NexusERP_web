@@ -11,6 +11,9 @@ public class GetMaterialRequestByBatchIdQueryHandler {
     private final MaterialRequestRepository materialRequestRepository;
 
     public MaterialRequest handle(GetMaterialRequestByBatchIdQuery query) {
-        return materialRequestRepository.findById(query.batchId()).orElseThrow(IllegalStateException::new);
+        MaterialRequest mr = materialRequestRepository.findById(query.batchId()).orElseThrow(IllegalStateException::new);
+        mr.getItems().removeIf(i -> i.getMaterialId().toUpperCase().startsWith("L"));
+
+        return mr;
     }
 }

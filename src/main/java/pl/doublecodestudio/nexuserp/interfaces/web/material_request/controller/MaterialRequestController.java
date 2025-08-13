@@ -49,6 +49,8 @@ public class MaterialRequestController {
         MaterialRequest mr =
                 getMaterialRequestByBatchIdQueryHandler.handle(new GetMaterialRequestByBatchIdQuery(batchId));
 
+
+
         return ResponseEntity.ok().body(mr);
     }
 
