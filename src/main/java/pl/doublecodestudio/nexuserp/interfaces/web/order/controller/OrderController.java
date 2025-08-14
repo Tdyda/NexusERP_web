@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pl.doublecodestudio.nexuserp.application.order.command.*;
 import pl.doublecodestudio.nexuserp.application.order.query.GetOrderByIndexQuery;
@@ -29,18 +30,21 @@ public class OrderController {
     private final GetOrderByLocationHandler getOrderByLocationHandler;
 
     @PostMapping
+    @PreAuthorize("hasRole('ORDER_REQUESTS') or hasRole('ADMIN')")
     public ResponseEntity<List<OrderDto>> create(@RequestBody CreateOrderCommand command) {
         List<OrderDto> orderDto = createOrderCommandHandler.handle(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderDto);
     }
 
     @PostMapping("/process-pending")
+    @PreAuthorize("hasRole('ORDERS_MEX') or hasRole('ADMIN')")
     public ResponseEntity<List<OrderSummaryDto>> processPendingOrders(@RequestBody ProcessPendingOrdersCommand command) {
         List<OrderSummaryDto> orderDtos = processPendingOrdersCommandHandler.handle(command);
         return ResponseEntity.status(HttpStatus.OK).body(orderDtos);
     }
 
     @GetMapping(params = {"index", "!location"})
+    @PreAuthorize("hasRole('ORDER_REQUESTS') or hasRole('ORDERS_MEX') or hasRole('ADMIN')")
     public ResponseEntity<List<OrderDto>> findByIndex(@RequestParam String index, Pageable pageable) {
         GetOrderByIndexQuery query = new GetOrderByIndexQuery(pageable, index);
         List<OrderDto> orderDtos = getOrderByIndexQueryHandler.handle(query);
@@ -49,6 +53,7 @@ public class OrderController {
     }
 
     @GetMapping(params = {"!index", "location"})
+    @PreAuthorize("hasRole('ORDER_REQUESTS') or hasRole('ADMIN')")
     public ResponseEntity<List<OrderDto>> findByLocation(@RequestParam String location, Pageable pageable) {
         GetOrderByLocation query = new GetOrderByLocation(location, pageable);
         List<OrderDto> orders = getOrderByLocationHandler.handle(query);
@@ -57,6 +62,7 @@ public class OrderController {
     }
 
     @PutMapping
+    @PreAuthorize("hasRole('ORDER_REQUESTS') or hasRole('ORDERS_MEX') or hasRole('ADMIN')")
     public ResponseEntity<List<OrderDto>> updateStatus(
             @RequestBody UpdateStatusCommand command,
             @RequestParam String index,

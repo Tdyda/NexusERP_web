@@ -2,6 +2,7 @@ package pl.doublecodestudio.nexuserp.interfaces.web.user.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ public class UserController {
     private final LoginCommandHandler loginCommandHandler;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDto> createUser(@RequestBody CreateUserCommand command) {
         UserDto user = createUserCommandHandler.handle(command);
         return ResponseEntity.ok(user);
