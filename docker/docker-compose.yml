@@ -1,0 +1,20 @@
+services:
+  spring-app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: NexusERP_api
+    ports:
+      - "8083:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - APP_DB_DATASOURCE_URL=${APP_DB_DATASOURCE_URL}
+      - APP_DB_USER=${APP_DB_USER}
+      - APP_DB_PASS=${APP_DB_PASS}
+      - APP_DB_DRIVER=${APP_DB_DRIVER}
+      - INTEGRATED_DB_DATASOURCE_URL=${INTEGRATED_DB_DATASOURCE_URL}
+      - INTEGRATED_DB_USER=${INTEGRATED_DB_USER}
+      - INTEGRATED_DB_PASS=${INTEGRATED_DB_PASS}
+      - INTEGRATED_DB_DRIVER_DB_DRIVER=${INTEGRATED_DB_DRIVER_DB_DRIVER}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_CONF_URL=${CORS_CONF_URL}
