@@ -62,6 +62,7 @@ public class UserService {
 
         Set<String> roles = new HashSet<>();
         user.getRoles().forEach(role -> roles.add(role.getName()));
+        log.info("User: {}", user.getEmail());
         roles.forEach(role -> {
             log.info("Roles: {}", role);
         });

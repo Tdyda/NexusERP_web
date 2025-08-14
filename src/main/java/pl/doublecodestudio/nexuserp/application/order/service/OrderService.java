@@ -184,8 +184,6 @@ public class OrderService {
         Map<String, OrderDto> byIndex = orderRepository.findByLocation(location, pageable).stream()
                 .filter(o -> !Objects.equals(o.getStatus(), "Zamknięte"))
                 .map(mapper::toDto)
-                // jeśli index może być null, odfiltruj:
-                // .filter(dto -> dto.getIndex() != null)
                 .collect(Collectors.toMap(
                         OrderDto::getIndex,
                         Function.identity(),
