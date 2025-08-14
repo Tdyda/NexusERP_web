@@ -21,16 +21,24 @@ import java.util.stream.Collectors;
 @Getter
 @Slf4j
 public class JwtService {
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60; // 1h
+    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 8; // 8h
     @Value("${jwt.secret}")
     private String SECRET_KEY;
     private SecretKey key;
 
     @PostConstruct
     public void init() {
-        this.key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
-        log.info("SECRET_KEY: " + SECRET_KEY);
+        if (SECRET_KEY == null || SECRET_KEY.isBlank()) {
+            throw new IllegalStateException("jwt.secret is missing. Provide application-docker.yml or env JWT_SECRET.");
+        }
+        byte[] keyBytes = SECRET_KEY.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) { // 256 bits
+            throw new IllegalStateException("jwt.secret must be at least 32 bytes for HS256 (jjwt).");
+        }
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+        log.info("JWT secret configured (length: {})", keyBytes.length);
     }
+
 
     public String generateToken(String subject, Set<String> roles) {
         return Jwts.builder()
