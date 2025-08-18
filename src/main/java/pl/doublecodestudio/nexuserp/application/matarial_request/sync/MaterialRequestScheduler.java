@@ -13,9 +13,9 @@ import pl.doublecodestudio.nexuserp.application.matarial_request.command.CreateM
 public class MaterialRequestScheduler {
     private final CreateMaterialRequestCommandHandler commandHandler;
 
-    @Scheduled(cron = "0 0 3 * * *")
-//@Scheduled(initialDelay = 3000, fixedDelay = Long.MAX_VALUE)
+    @Scheduled(cron = "0 */5 * * * *")
     public void syncMaterialRequests() {
+        log.info("Start sync material requests");
         try {
             commandHandler.handle();
             log.info("MaterialRequest sync completed successfully");
