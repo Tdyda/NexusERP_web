@@ -49,4 +49,7 @@ public class JpaMaterialRequestEntity {
 
     @Column(name = "Client", nullable = false)
     private String client;
+
+    @Column(name = "Quantity", nullable = false)
+    private Integer quantity;
 }

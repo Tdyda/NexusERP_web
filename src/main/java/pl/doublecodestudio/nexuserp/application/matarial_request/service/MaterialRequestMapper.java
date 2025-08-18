@@ -14,5 +14,6 @@ public interface MaterialRequestMapper {
     @Mapping(target = "status", source = "sectionStatus")
     @Mapping(target = "shippingDate", source = "shippDate")
     @Mapping(target = "client", source = "commentClient")
+    @Mapping(target = "quantity", source = "sectProdQty")
     MaterialRequest toMaterialRequest(MaterialDemandKitting demand);
 }
