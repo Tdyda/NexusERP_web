@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MaterialRequestSyncService {
     private final MaterialRequestRepository materialRequestRepository;
     private final MaterialDemandKittingRepository materialDemandKittingRepository;
@@ -78,7 +79,8 @@ public class MaterialRequestSyncService {
                 baseRequest.getDeliveryDate(),
                 baseRequest.getReleaseDate(),
                 items,
-                baseRequest.getClient()
+                baseRequest.getClient(),
+                baseRequest.getQuantity()
         );
     }
 
@@ -86,10 +88,17 @@ public class MaterialRequestSyncService {
         var groupedDemands = demands.stream()
                 .collect(Collectors.groupingBy(MaterialDemandKitting::getBatchId));
 
-        return groupedDemands.entrySet().stream()
+        List<MaterialRequest> newList = groupedDemands.entrySet().stream()
                 .filter(entry -> !existingBatchIds.contains(entry.getKey()))
                 .map(entry -> buildMaterialRequestWithItems(entry.getValue()))
                 .toList();
+
+        newList.forEach(item -> {
+            log.info("Index: {} , Quantity: {}", item.getFinalProductId(), item.getQuantity());
+        });
+
+        return newList;
+
 
 //        return demands.stream()
 //                .collect(Collectors.groupingBy(MaterialDemandKitting::getBatchId)).entrySet().stream()
