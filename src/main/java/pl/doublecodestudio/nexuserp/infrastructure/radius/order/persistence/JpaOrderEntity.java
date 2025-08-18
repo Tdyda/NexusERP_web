@@ -54,6 +54,6 @@ public class JpaOrderEntity {
     private String client;
 
     @NotNull
-    @Column(name = "BatchId", nullable = false, unique = true)
+    @Column(name = "BatchId", nullable = false)
     private String batchId;
 }
