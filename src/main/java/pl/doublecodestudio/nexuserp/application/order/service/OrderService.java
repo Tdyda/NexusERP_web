@@ -54,6 +54,10 @@ public class OrderService {
             throw new IllegalArgumentException("Material request with this batchId and materialIds doesn't exists!");
         }
 
+        mr.getItems().forEach(item -> {log.info("mr get item: {}", item.getMaterialId());});
+        command.getMaterialIds().forEach(id -> {
+            log.info("Checking material request with id {}", id);
+        });
         List<Order> orders = mr.getItems().stream().filter(item ->
                         command.getMaterialIds().contains(item.getMaterialId())
                 ).map(item -> Order.Create(
@@ -69,6 +73,7 @@ public class OrderService {
                 ))
                 .toList();
 
+        orders.forEach(item -> log.info("item: {}", item.getIndex()));
         List<Order> savedOrders = orderRepository.saveAll(orders);
 
         MaterialRequest updatedMr = mr.withStatus("Closed");
