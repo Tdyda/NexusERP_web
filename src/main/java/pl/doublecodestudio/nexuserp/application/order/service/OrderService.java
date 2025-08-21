@@ -201,6 +201,8 @@ public class OrderService {
                         LinkedHashMap::new
                 ));
 
+        log.info("Quantity of orders: {}", (long) byIndex.size());
+
         return new ArrayList<>(byIndex.values());
     }
 }
