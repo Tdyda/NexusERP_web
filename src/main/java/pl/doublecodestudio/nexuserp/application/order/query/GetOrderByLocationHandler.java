@@ -15,6 +15,6 @@ public class GetOrderByLocationHandler {
     private final OrderService orderService;
 
     public List<OrderDto> handle(GetOrderByLocation query){
-        return orderService.getAllOrdersByLocationAndStatus(query.location(), query.pageable());
+        return orderService.getAllOrdersByLocationAndStatus(query.location());
     }
 }

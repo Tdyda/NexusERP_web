@@ -185,8 +185,8 @@ public class OrderService {
         return updatedOrders.stream().map(mapper::toDto).toList();
     }
 
-    public List<OrderDto> getAllOrdersByLocationAndStatus(String location, Pageable pageable) {
-        Map<String, OrderDto> byIndex = orderRepository.findByLocation(location, pageable).stream()
+    public List<OrderDto> getAllOrdersByLocationAndStatus(String location) {
+        Map<String, OrderDto> byIndex = orderRepository.findByLocation(location).stream()
                 .filter(o -> !Objects.equals(o.getStatus(), "Zamknięte"))
                 .map(mapper::toDto)
                 .collect(Collectors.toMap(
