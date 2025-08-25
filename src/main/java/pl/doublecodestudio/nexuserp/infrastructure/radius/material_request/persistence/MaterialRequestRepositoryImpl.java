@@ -55,14 +55,6 @@ public class MaterialRequestRepositoryImpl implements MaterialRequestRepository 
         return new PageResult<>(content, page.getTotalElements(), page.getNumber(), page.getSize());
     }
 
-//    @Override
-//    public PageResult<MaterialRequest> findAll(Pageable pageable) {
-//        Page<JpaMaterialRequestEntity> page = repo.findAll(pageable);
-//        List<MaterialRequest> content = page.map(mapper::toDomain).getContent();
-//        return new PageResult<>(content, page.getTotalElements(), page.getNumber(), page.getSize());
-//    }
-
-
     @Override
     public Optional<MaterialRequest> findById(String batchId) {
         return repo.findById(batchId)

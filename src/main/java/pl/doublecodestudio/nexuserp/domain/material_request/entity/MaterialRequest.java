@@ -18,6 +18,7 @@ public class MaterialRequest {
     private final String finalProductId;
     private final String finalProductName;
     private final String unitId;
+    private final String unitIdHash;
     private final String status;
     private final Instant shippingDate;
     private final Instant deliveryDate;
@@ -32,6 +33,7 @@ public class MaterialRequest {
         this.finalProductId = null;
         this.finalProductName = null;
         this.unitId = null;
+        this.unitIdHash = null;
         this.status = null;
         this.shippingDate = null;
         this.deliveryDate = null;
@@ -48,6 +50,7 @@ public class MaterialRequest {
                 this.finalProductId,
                 this.finalProductName,
                 this.unitId,
+                this.unitIdHash,
                 newStatus,
                 this.shippingDate,
                 this.deliveryDate,
@@ -64,6 +67,7 @@ public class MaterialRequest {
             String finalProductId,
             String finalProductName,
             String unitId,
+            String unitIdHash,
             String status,
             Instant shippingDate,
             Instant deliveryDate,

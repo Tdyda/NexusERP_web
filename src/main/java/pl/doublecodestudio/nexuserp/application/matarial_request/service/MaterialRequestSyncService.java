@@ -3,6 +3,7 @@ package pl.doublecodestudio.nexuserp.application.matarial_request.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;
 import pl.doublecodestudio.nexuserp.domain.material_demand.entity.MaterialDemandKitting;
 import pl.doublecodestudio.nexuserp.domain.material_demand.port.MaterialDemandKittingRepository;
@@ -12,8 +13,11 @@ import pl.doublecodestudio.nexuserp.domain.material_request.port.MaterialRequest
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,10 +32,34 @@ public class MaterialRequestSyncService {
     public void syncMissingMaterialRequests() {
         List<MaterialDemandKitting> recentDemands = getRecentMaterialDemands();
         Set<String> existingBatchIds = getExistingBatchIds();
-        List<MaterialRequest> newRequests = generateNewRequests(recentDemands, existingBatchIds);
+        List<MaterialRequest> allCandidates = generateNewRequests(recentDemands, existingBatchIds);
 
-        if (!newRequests.isEmpty()) {
-            materialRequestRepository.saveAll(newRequests);
+        Set<String> batchIds = allCandidates.stream()
+                .map(MaterialRequest::getBatchId)
+                .collect(Collectors.toSet());
+
+        List<MaterialRequest> existingRequests = materialRequestRepository.findByBatchIdIn(batchIds);
+        Map<String, MaterialRequest> existingByBatchId = existingRequests.stream()
+                .collect(Collectors.toMap(MaterialRequest::getBatchId, Function.identity()));
+
+        List<MaterialRequest> toInsert = new ArrayList<>();
+        List<MaterialRequest> toUpdate = new ArrayList<>();
+
+        for (MaterialRequest candidate : allCandidates) {
+            MaterialRequest existing = existingByBatchId.get(candidate.getBatchId());
+            if (existing == null) {
+                toInsert.add(candidate);
+            } else if (!existing.getUnitIdHash().equals(candidate.getUnitIdHash())) {
+                toUpdate.add(candidate.withStatus(existing.getStatus()));
+            }
+        }
+
+        if (!toInsert.isEmpty()) {
+            materialRequestRepository.saveAll(toInsert);
+        }
+
+        if (!toUpdate.isEmpty()) {
+            materialRequestRepository.saveAll(toUpdate);
         }
     }
 
@@ -74,6 +102,7 @@ public class MaterialRequestSyncService {
                 baseRequest.getFinalProductId(),
                 baseRequest.getFinalProductName(),
                 baseRequest.getUnitId(),
+                hash(baseRequest.getUnitId()),
                 "New",
                 baseRequest.getShippingDate(),
                 baseRequest.getDeliveryDate(),
@@ -82,6 +111,10 @@ public class MaterialRequestSyncService {
                 baseRequest.getClient(),
                 baseRequest.getQuantity()
         );
+    }
+
+    private String hash(String value){
+        return DigestUtils.sha256Hex(value);
     }
 
     private List<MaterialRequest> generateNewRequests(List<MaterialDemandKitting> demands, Set<String> existingBatchIds) {

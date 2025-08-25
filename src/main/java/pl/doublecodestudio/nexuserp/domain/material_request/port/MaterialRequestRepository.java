@@ -7,6 +7,7 @@ import pl.doublecodestudio.nexuserp.interfaces.web.page.PageResult;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface MaterialRequestRepository {
     void save(MaterialRequest materialRequest);
@@ -17,9 +18,9 @@ public interface MaterialRequestRepository {
 
     List<MaterialRequest> findAll();
 
-//    PageResult<MaterialRequest> findAll(Pageable pageable);
-
     PageResult<MaterialRequest> findAll(Pageable pageable, List<Filter> filters);
 
     Optional<MaterialRequest> findById(String id);
+
+    List<MaterialRequest> findByBatchIdIn(Set<String> batchIds);
 }
