@@ -13,10 +13,7 @@ import pl.doublecodestudio.nexuserp.domain.material_request.port.MaterialRequest
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -31,8 +28,8 @@ public class MaterialRequestSyncService {
     @Transactional
     public void syncMissingMaterialRequests() {
         List<MaterialDemandKitting> recentDemands = getRecentMaterialDemands();
-        Set<String> existingBatchIds = getExistingBatchIds();
-        List<MaterialRequest> allCandidates = generateNewRequests(recentDemands, existingBatchIds);
+
+        List<MaterialRequest> allCandidates = buildAllCandidates(recentDemands);
 
         Set<String> batchIds = allCandidates.stream()
                 .map(MaterialRequest::getBatchId)
@@ -49,8 +46,10 @@ public class MaterialRequestSyncService {
             MaterialRequest existing = existingByBatchId.get(candidate.getBatchId());
             if (existing == null) {
                 toInsert.add(candidate);
-            } else if (!existing.getUnitIdHash().equals(candidate.getUnitIdHash())) {
-                toUpdate.add(candidate.withStatus(existing.getStatus()));
+            } else if (!Objects.equals(existing.getUnitIdHash(), candidate.getUnitIdHash())) {
+                log.info("Update batch: {}, from unit: {}, to unit: {}", existing.getBatchId(), existing.getUnitId(), candidate.getUnitId());
+                MaterialRequest updated = existing.withUnitId(candidate.getUnitId(), candidate.getUnitIdHash());
+                toUpdate.add(updated);
             }
         }
 
@@ -76,12 +75,6 @@ public class MaterialRequestSyncService {
                 .toList();
     }
 
-    private Set<String> getExistingBatchIds() {
-        return materialRequestRepository.findAll().stream()
-                .map(MaterialRequest::getBatchId)
-                .collect(Collectors.toSet());
-    }
-
     private MaterialRequest buildMaterialRequestWithItems(List<MaterialDemandKitting> demands) {
         var header = demands.get(0);
 
@@ -95,6 +88,7 @@ public class MaterialRequestSyncService {
                         d.getIlosc() != null ? d.getIlosc().longValue() : 0L
                 ))
                 .toList();
+        String unitIdHash = hash(baseRequest.getUnitId());
 
         return MaterialRequest.create(
                 baseRequest.getBatchId(),
@@ -102,7 +96,7 @@ public class MaterialRequestSyncService {
                 baseRequest.getFinalProductId(),
                 baseRequest.getFinalProductName(),
                 baseRequest.getUnitId(),
-                hash(baseRequest.getUnitId()),
+                unitIdHash,
                 "New",
                 baseRequest.getShippingDate(),
                 baseRequest.getDeliveryDate(),
@@ -113,30 +107,18 @@ public class MaterialRequestSyncService {
         );
     }
 
-    private String hash(String value){
+    private String hash(String value) {
         return DigestUtils.sha256Hex(value);
     }
 
-    private List<MaterialRequest> generateNewRequests(List<MaterialDemandKitting> demands, Set<String> existingBatchIds) {
-        var groupedDemands = demands.stream()
+    private List<MaterialRequest> buildAllCandidates(List<MaterialDemandKitting> demands) {
+        Map<String, List<MaterialDemandKitting>> groupedDemands = demands.stream()
                 .collect(Collectors.groupingBy(MaterialDemandKitting::getBatchId));
 
-        List<MaterialRequest> newList = groupedDemands.entrySet().stream()
-                .filter(entry -> !existingBatchIds.contains(entry.getKey()))
-                .map(entry -> buildMaterialRequestWithItems(entry.getValue()))
+        return demands.stream()
+                .collect(Collectors.groupingBy(MaterialDemandKitting::getBatchId))
+                .values().stream()
+                .map(this::buildMaterialRequestWithItems)
                 .toList();
-
-        newList.forEach(item -> {
-            log.info("Index: {} , Quantity: {}", item.getFinalProductId(), item.getQuantity());
-        });
-
-        return newList;
-
-
-//        return demands.stream()
-//                .collect(Collectors.groupingBy(MaterialDemandKitting::getBatchId)).entrySet().stream()
-//                .filter(entry -> !existingBatchIds.contains(entry.getKey()))
-//                .map(entry -> buildMaterialRequestWithItems(entry.getValue()))
-//                .toList();
     }
 }
