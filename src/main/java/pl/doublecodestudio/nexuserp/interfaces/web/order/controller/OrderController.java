@@ -54,8 +54,8 @@ public class OrderController {
 
     @GetMapping(params = {"!index", "location"})
     @PreAuthorize("hasRole('ORDER_REQUESTS') or hasRole('ADMIN')")
-    public ResponseEntity<List<OrderDto>> findByLocation(@RequestParam String location, Pageable pageable) {
-        GetOrderByLocation query = new GetOrderByLocation(location, pageable);
+    public ResponseEntity<List<OrderDto>> findByLocation(@RequestParam String location) {
+        GetOrderByLocation query = new GetOrderByLocation(location);
         List<OrderDto> orders = getOrderByLocationHandler.handle(query);
 
         return ResponseEntity.status(HttpStatus.OK).body(orders);

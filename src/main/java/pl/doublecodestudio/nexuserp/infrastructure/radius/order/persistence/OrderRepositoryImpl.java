@@ -67,8 +67,8 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public List<Order> findByLocation(String location, Pageable pageable) {
-        return repo.findByProdLine(location, pageable).stream()
+    public List<Order> findByLocation(String location) {
+        return repo.findByProdLine(location).stream()
                 .map(mapper::toDomain)
                 .toList();
     }

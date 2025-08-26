@@ -13,6 +13,7 @@ import pl.doublecodestudio.nexuserp.interfaces.web.page.PageResult;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
@@ -55,17 +56,20 @@ public class MaterialRequestRepositoryImpl implements MaterialRequestRepository 
         return new PageResult<>(content, page.getTotalElements(), page.getNumber(), page.getSize());
     }
 
-//    @Override
-//    public PageResult<MaterialRequest> findAll(Pageable pageable) {
-//        Page<JpaMaterialRequestEntity> page = repo.findAll(pageable);
-//        List<MaterialRequest> content = page.map(mapper::toDomain).getContent();
-//        return new PageResult<>(content, page.getTotalElements(), page.getNumber(), page.getSize());
-//    }
-
-
     @Override
     public Optional<MaterialRequest> findById(String batchId) {
         return repo.findById(batchId)
                 .map(mapper::toDomain);
+    }
+
+    @Override
+    public List<MaterialRequest> findByBatchIdIn(Set<String> batchIds) {
+        if(batchIds == null || batchIds.isEmpty()){
+            return List.of();
+        }
+
+        return repo.findByBatchIdIn(batchIds).stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 }

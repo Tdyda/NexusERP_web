@@ -21,5 +21,5 @@ public interface JpaOrderRepository extends JpaRepository<JpaOrderEntity, Long> 
 
     List<JpaOrderEntity> findByStatusAndIndex(String status, String index);
 
-    List<JpaOrderEntity> findByProdLine(String prodLine, Pageable pageable);
+    List<JpaOrderEntity> findByProdLine(String prodLine);
 }

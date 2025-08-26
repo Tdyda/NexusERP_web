@@ -11,6 +11,7 @@ import pl.doublecodestudio.nexuserp.application.matarial_request.command.CreateM
 @Slf4j
 @Component
 public class MaterialRequestScheduler {
+
     private final CreateMaterialRequestCommandHandler commandHandler;
 
     @Scheduled(cron = "0 */5 * * * *")

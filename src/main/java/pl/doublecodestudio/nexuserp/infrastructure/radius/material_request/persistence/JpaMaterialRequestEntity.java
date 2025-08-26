@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "MaterialRequest", schema = "dbo") // <- nazwę tabeli i schematu dopasuj do swojej bazy
+@Table(name = "MaterialRequest", schema = "dbo")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,6 +31,9 @@ public class JpaMaterialRequestEntity {
 
     @Column(name = "UnitId", nullable = false)
     private String unitId;
+
+    @Column(name = "UnitIdHash", nullable = false)
+    private String unitIdHash;
 
     @Column(name = "Status", nullable = false)
     private String status;

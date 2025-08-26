@@ -18,6 +18,7 @@ public interface MaterialRequestPersistenceMapper {
 
     @Mapping(target = "items", ignore = true)
     @Mapping(target = "quantity", source = "quantity")
+    @Mapping(target = "unitIdHash", source = "unitIdHash")
     JpaMaterialRequestEntity toEntity(MaterialRequest domain);
 
     default JpaMaterialRequestEntity toEntityWithItems(MaterialRequest domain, @Context MaterialRequestItemMapper itemMapper) {
