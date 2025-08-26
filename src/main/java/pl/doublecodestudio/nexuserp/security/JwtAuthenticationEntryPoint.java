@@ -47,20 +47,20 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException {
-        if (isUnknownPath(request)) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.setContentType("application/json");
-            response.getWriter().write(mapper.writeValueAsString(
-                    Map.of(
-                            "timestamp", Instant.now(),
-                            "status", 404,
-                            "error", "Not Found",
-                            "path", request.getRequestURI(),
-                            "errors", Map.of("error", "No endpoint matches this path")
-                    )
-            ));
-            return;
-        }
+//        if (isUnknownPath(request)) {
+//            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+//            response.setContentType("application/json");
+//            response.getWriter().write(mapper.writeValueAsString(
+//                    Map.of(
+//                            "timestamp", Instant.now(),
+//                            "status", 404,
+//                            "error", "Not Found",
+//                            "path", request.getRequestURI(),
+//                            "errors", Map.of("error", "No endpoint matches this path")
+//                    )
+//            ));
+//            return;
+//        }
 
         ErrorResponse error = ErrorResponse.builder()
                 .timestamp(Instant.now())
@@ -75,9 +75,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.getWriter().write(mapper.writeValueAsString(error));
     }
 
-    private boolean isUnknownPath(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        return knownPaths.stream().noneMatch(path::equals);
-    }
+//    private boolean isUnknownPath(HttpServletRequest request) {
+//        String path = request.getRequestURI();
+//        return knownPaths.stream().noneMatch(path::equals);
+//    }
 }
 

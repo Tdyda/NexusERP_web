@@ -1,0 +1,21 @@
+package pl.doublecodestudio.nexuserp.infrastructure.phmes.substitute;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+import pl.doublecodestudio.nexuserp.domain.substitute.entity.Substitute;
+import pl.doublecodestudio.nexuserp.domain.substitute.port.SubstituteRepository;
+
+import java.util.List;
+
+@Repository
+@RequiredArgsConstructor
+public class SubstituteRepositoryImpl implements SubstituteRepository {
+    private final JpaSubstituteRepository repo;
+
+    @Override
+    public List<Substitute> findByBaseMaterialId(String baseMaterialId) {
+        return repo.findByBaseMaterialId(baseMaterialId).stream()
+                .map(item -> Substitute.create(item.getBaseMaterialId(), item.getSubstMaterialId()))
+                .toList();
+    }
+}
