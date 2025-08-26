@@ -67,11 +67,10 @@ public class MaterialRequestSyncService {
         Instant from = now.minus(Duration.ofDays(14));
         Instant to = now.plus(Duration.ofDays(14));
 
+        var check = materialDemandKittingRepository.findAll();
+
         return materialDemandKittingRepository.findAll().stream()
-                .filter(item -> {
-                    Instant date = item.getReleaseDate();
-                    return date.isAfter(from) && date.isBefore(to);
-                })
+                .filter(item -> item != null && item.getReleaseDate().isAfter(from) && item.getReleaseDate().isBefore(to))
                 .toList();
     }
 
@@ -89,6 +88,10 @@ public class MaterialRequestSyncService {
                 ))
                 .toList();
         String unitIdHash = hash(baseRequest.getUnitId());
+
+        if (baseRequest.getReleaseDate() == null) {
+            log.info("Item null: {}", baseRequest.getBatchId());
+        }
 
         return MaterialRequest.create(
                 baseRequest.getBatchId(),
