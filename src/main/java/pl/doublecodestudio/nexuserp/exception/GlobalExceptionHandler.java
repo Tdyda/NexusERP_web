@@ -8,7 +8,10 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import javax.naming.AuthenticationException;
 import java.nio.file.AccessDeniedException;
@@ -134,6 +137,30 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoResource(NoResourceFoundException ex, HttpServletRequest req) {
+        return ErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(404)
+                .error("Not Found")
+                .path(req.getRequestURI())
+                .errors(Map.of("error", "No endpoint matches this path"))
+                .build();
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoHandler(NoHandlerFoundException ex, HttpServletRequest req) {
+        return ErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(404)
+                .error("Not Found")
+                .path(req.getRequestURI())
+                .errors(Map.of("error", "No endpoint matches this path"))
+                .build();
     }
 
     @ExceptionHandler(Exception.class)
