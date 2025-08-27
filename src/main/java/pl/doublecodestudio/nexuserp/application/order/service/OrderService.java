@@ -6,10 +6,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pl.doublecodestudio.nexuserp.application.order.command.CreateOrderCommand;
 import pl.doublecodestudio.nexuserp.application.order.command.ProcessPendingOrdersCommand;
+import pl.doublecodestudio.nexuserp.application.substitute.service.SubstituteService;
 import pl.doublecodestudio.nexuserp.domain.material_request.entity.MaterialRequest;
+import pl.doublecodestudio.nexuserp.domain.material_request.entity.MaterialRequestItem;
 import pl.doublecodestudio.nexuserp.domain.material_request.port.MaterialRequestRepository;
 import pl.doublecodestudio.nexuserp.domain.order.entity.Order;
 import pl.doublecodestudio.nexuserp.domain.order.port.OrderRepository;
+import pl.doublecodestudio.nexuserp.domain.substitute.port.SubstituteRepository;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderDto;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderSummaryDto;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.mapper.OrderMapperDto;
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final MaterialRequestRepository materialRequestRepository;
+    private final SubstituteService substituteService;
     private final OrderMapperDto mapper;
 
     public List<OrderDto> createOrder(CreateOrderCommand command) {
@@ -46,32 +50,72 @@ public class OrderService {
         MaterialRequest mr = materialRequestRepository.findById(command.getBatchId()).orElseThrow(
                 () -> new IllegalArgumentException("Material request with this batchId doesn't exists!"));
 
-        boolean containsAny = mr.getItems().stream().anyMatch(item ->
-                command.getMaterialIds().contains(item.getMaterialId())
-        );
+//        boolean containsAny = mr.getItems().stream().anyMatch(item ->
+//                command.getMaterialIds().contains(item.getMaterialId())
+//        );
 
-        if (!containsAny) {
-            throw new IllegalArgumentException("Material request with this batchId and materialIds doesn't exists!");
+//        if (!containsAny) {
+//            throw new IllegalArgumentException("Material request with this batchId and materialIds doesn't exists!");
+//        }
+
+//        mr.getItems().forEach(item -> {log.info("mr get item: {}", item.getMaterialId());});
+//        command.getMaterialIds().forEach(id -> {
+//            log.info("Checking material request with id {}", id);
+//        });
+
+        Set<String> allowedMaterialIds = new HashSet<>();
+
+        List<String> baseIds = mr.getItems().stream()
+                .map(MaterialRequestItem::getMaterialId)
+                .toList();
+
+        Map<String, List<String>> substitutesMap = substituteService.getAllSubstitutes(baseIds);
+
+        for (String baseId : baseIds) {
+            allowedMaterialIds.add(baseId);
+            List<String> substitutes = substitutesMap.getOrDefault(baseId, List.of());
+            allowedMaterialIds.addAll(substitutes);
         }
 
-        mr.getItems().forEach(item -> {log.info("mr get item: {}", item.getMaterialId());});
-        command.getMaterialIds().forEach(id -> {
-            log.info("Checking material request with id {}", id);
-        });
-        List<Order> orders = mr.getItems().stream().filter(item ->
-                        command.getMaterialIds().contains(item.getMaterialId())
-                ).map(item -> Order.Create(
-                        item.getMaterialId(),
-                        item.getMaterialName(),
-                        item.getAmount().doubleValue(),
-                        mr.getUnitId(),
-                        Instant.now(),
-                        command.getComment(),
-                        "Oczekujące",
-                        item.getClient(),
-                        mr.getBatchId()
-                ))
+
+        Map<String, MaterialRequestItem> itemsByBaseId = mr.getItems().stream()
+                .collect(Collectors.toMap(MaterialRequestItem::getMaterialId, Function.identity()));
+
+        Map<String, String> substituteToBase = new HashMap<>();
+        for (Map.Entry<String, List<String>> entry : substitutesMap.entrySet()) {
+            String base = entry.getKey();
+            for (String sub : entry.getValue()) {
+                substituteToBase.put(sub, base);
+            }
+        }
+
+        List<Order> orders = command.getMaterialIds().stream()
+                .map(selectedId -> {
+                    // znajdź bazowy indeks
+                    String baseId = itemsByBaseId.containsKey(selectedId)
+                            ? selectedId
+                            : substituteToBase.get(selectedId);
+
+                    if (baseId == null || !itemsByBaseId.containsKey(baseId)) {
+                        throw new IllegalArgumentException("Nieprawidłowy indeks materiału: " + selectedId);
+                    }
+
+                    MaterialRequestItem item = itemsByBaseId.get(baseId);
+
+                    return Order.Create(
+                            selectedId, // to, co wybrał użytkownik (oryginał lub zamiennik)
+                            item.getMaterialName(),
+                            item.getAmount().doubleValue(),
+                            mr.getUnitId(),
+                            Instant.now(),
+                            command.getComment(),
+                            "Oczekujące",
+                            item.getClient(),
+                            mr.getBatchId()
+                    );
+                })
                 .toList();
+
 
         orders.forEach(item -> log.info("item: {}", item.getIndex()));
         List<Order> savedOrders = orderRepository.saveAll(orders);
