@@ -33,6 +33,7 @@ public class OrderController {
     @PreAuthorize("hasRole('ORDER_REQUESTS') or hasRole('ADMIN')")
     public ResponseEntity<List<OrderDto>> create(@RequestBody CreateOrderCommand command) {
         List<OrderDto> orderDto = createOrderCommandHandler.handle(command);
+        log.info("utworzone zamówienie");
         return ResponseEntity.status(HttpStatus.CREATED).body(orderDto);
     }
 
