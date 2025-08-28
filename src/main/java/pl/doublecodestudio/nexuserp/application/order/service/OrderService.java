@@ -5,11 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pl.doublecodestudio.nexuserp.application.order.command.CreateOrderCommand;
+import pl.doublecodestudio.nexuserp.application.order.command.CreateOrderManualCommand;
 import pl.doublecodestudio.nexuserp.application.order.command.ProcessPendingOrdersCommand;
 import pl.doublecodestudio.nexuserp.application.substitute.service.SubstituteService;
+
 import pl.doublecodestudio.nexuserp.domain.material_request.entity.MaterialRequest;
 import pl.doublecodestudio.nexuserp.domain.material_request.entity.MaterialRequestItem;
 import pl.doublecodestudio.nexuserp.domain.material_request.port.MaterialRequestRepository;
+import pl.doublecodestudio.nexuserp.domain.mtl_material.entity.MtlMaterial;
+import pl.doublecodestudio.nexuserp.domain.mtl_material.port.MtlMaterialRepository;
 import pl.doublecodestudio.nexuserp.domain.order.entity.Order;
 import pl.doublecodestudio.nexuserp.domain.order.port.OrderRepository;
 import pl.doublecodestudio.nexuserp.domain.substitute.port.SubstituteRepository;
@@ -31,6 +35,7 @@ import java.util.stream.Collectors;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final MaterialRequestRepository materialRequestRepository;
+    private final MtlMaterialRepository mtlMaterialRepository;
     private final SubstituteService substituteService;
     private final OrderMapperDto mapper;
 
@@ -124,6 +129,27 @@ public class OrderService {
         materialRequestRepository.save(updatedMr);
 
         return savedOrders.stream().map(mapper::toDto).collect(Collectors.toList());
+    }
+
+    public OrderDto createOrderManual(CreateOrderManualCommand command) {
+        MtlMaterial material = mtlMaterialRepository.findById(command.getIndex())
+                .orElseThrow(() -> new IllegalArgumentException("Material request with index " + command.getIndex() + " doesn't exists!"));
+
+        Order order = Order.Create(
+                command.getIndex(),
+                material.getMaterialDesc(),
+                command.getQuantity(),
+                command.getLocationCode(),
+                Instant.now(),
+                command.getComment(),
+                "Oczekujące",
+                command.getClient(),
+                command.getBatchId()
+        );
+
+        orderRepository.save(order);
+
+        return mapper.toDto(order);
     }
 
     public List<OrderSummaryDto> updateOrder(ProcessPendingOrdersCommand command) {

@@ -8,6 +8,7 @@ import pl.doublecodestudio.nexuserp.domain.order.port.OrderRepository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -34,6 +35,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public List<Order> findByIndex(String index, Pageable pageable) {
         return repo.findByIndex(index, pageable).stream()
+                .filter(item -> !Objects.equals(item.getStatus(), "Zamknięte"))
                 .map(mapper::toDomain)
                 .toList();
     }
