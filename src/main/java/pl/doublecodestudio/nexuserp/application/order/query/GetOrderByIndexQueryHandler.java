@@ -7,6 +7,7 @@ import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderDto;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.mapper.OrderMapperDto;
 
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -16,6 +17,7 @@ public class GetOrderByIndexQueryHandler {
 
     public List<OrderDto> handle(GetOrderByIndexQuery query) {
         return orderRepository.findByIndex(query.index(), query.pageable()).stream()
+                .filter(item -> !Objects.equals(item.getStatus(), "Ukończone"))
                 .map(mapper::toDto)
                 .toList();
     }
