@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import pl.doublecodestudio.nexuserp.domain.substitute.entity.Substitute;
 import pl.doublecodestudio.nexuserp.domain.substitute.port.SubstituteRepository;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -17,5 +18,12 @@ public class SubstituteRepositoryImpl implements SubstituteRepository {
         return repo.findByBaseMaterialId(baseMaterialId).stream()
                 .map(item -> Substitute.create(item.getBaseMaterialId(), item.getSubstMaterialId()))
                 .toList();
+    }
+
+    @Override
+    public List<Substitute> findByBaseMaterialIdIn(Collection<String> baseIndexes) {
+        return repo.findByBaseMaterialIdIn(baseIndexes).stream()
+                .map(item -> Substitute.create(item.getBaseMaterialId(), item.getSubstMaterialId())
+                ).toList();
     }
 }

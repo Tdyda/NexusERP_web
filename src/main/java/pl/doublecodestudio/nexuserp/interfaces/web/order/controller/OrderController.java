@@ -25,6 +25,7 @@ import java.util.List;
 public class OrderController {
     private final CreateOrderCommandHandler createOrderCommandHandler;
     private final ProcessPendingOrdersCommandHandler processPendingOrdersCommandHandler;
+    private final CreateOrderManualCommandHandler  createOrderManualCommandHandler;
     private final GetOrderByIndexQueryHandler getOrderByIndexQueryHandler;
     private final UpdateStatusCommandHandler updateStatusCommandHandler;
     private final GetOrderByLocationHandler getOrderByLocationHandler;
@@ -33,6 +34,7 @@ public class OrderController {
     @PreAuthorize("hasRole('ORDER_REQUESTS') or hasRole('ADMIN')")
     public ResponseEntity<List<OrderDto>> create(@RequestBody CreateOrderCommand command) {
         List<OrderDto> orderDto = createOrderCommandHandler.handle(command);
+        log.info("utworzone zamówienie");
         return ResponseEntity.status(HttpStatus.CREATED).body(orderDto);
     }
 
@@ -41,6 +43,13 @@ public class OrderController {
     public ResponseEntity<List<OrderSummaryDto>> processPendingOrders(@RequestBody ProcessPendingOrdersCommand command) {
         List<OrderSummaryDto> orderDtos = processPendingOrdersCommandHandler.handle(command);
         return ResponseEntity.status(HttpStatus.OK).body(orderDtos);
+    }
+
+    @PostMapping("/create-manual")
+    @PreAuthorize("hasRole('ORDER_REQUESTS') or hasRole('ADMIN')")
+    public ResponseEntity<OrderDto> createManual(@RequestBody CreateOrderManualCommand command) {
+        OrderDto orderDto = createOrderManualCommandHandler.handle(command);
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderDto);
     }
 
     @GetMapping(params = {"index", "!location"})
