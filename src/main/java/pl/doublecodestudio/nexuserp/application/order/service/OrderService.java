@@ -51,6 +51,13 @@ public class OrderService {
             }
         });
 
+        long ordersQuantity = this.countOrdersByLocation(command.getLocationCode());
+        log.info("Ilość zamówień {}", ordersQuantity);
+
+        if (ordersQuantity > 3){
+            throw new IllegalArgumentException("Zbyt wiele zamówień w statusie oczekującym lub w trakcie realizacji");
+        }
+
 
         MaterialRequest mr = materialRequestRepository.findById(command.getBatchId()).orElseThrow(
                 () -> new IllegalArgumentException("Material request with this batchId doesn't exists!"));
@@ -274,5 +281,21 @@ public class OrderService {
         log.info("Quantity of orders: {}", (long) byIndex.size());
 
         return new ArrayList<>(byIndex.values());
+    }
+
+    private Long countOrdersByLocation(String locationCode)
+    {
+        if(locationCode == null) locationCode = "SK1";
+        Map<String, Map<String, List<Order>>> grouped = orderRepository.findByLocation(locationCode).stream()
+                .filter(order -> !order.getStatus().equals("Zamknięte"))
+                .collect(Collectors.groupingBy(
+                        Order::getIndex,
+                        Collectors.groupingBy(Order::getProdLine)
+                ));
+
+        return grouped.values().stream()
+                .flatMap(prodLineMap -> prodLineMap.values().stream()) // Stream<List<Order>>
+                .mapToLong(List::size)
+                .sum();
     }
 }
