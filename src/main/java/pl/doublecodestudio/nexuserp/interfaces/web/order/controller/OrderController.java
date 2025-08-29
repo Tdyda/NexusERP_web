@@ -18,7 +18,6 @@ import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderSummaryDto;
 
 import java.util.List;
 
-@Slf4j
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -34,7 +33,6 @@ public class OrderController {
     @PreAuthorize("hasRole('ORDER_REQUESTS') or hasRole('ADMIN')")
     public ResponseEntity<List<OrderDto>> create(@RequestBody CreateOrderCommand command) {
         List<OrderDto> orderDto = createOrderCommandHandler.handle(command);
-        log.info("utworzone zamówienie");
         return ResponseEntity.status(HttpStatus.CREATED).body(orderDto);
     }
 
@@ -77,7 +75,6 @@ public class OrderController {
             @RequestParam String index,
             @RequestParam String status) {
 
-        log.info("Update status command: {}", command.getStatus());
         List<OrderDto> orderDtos = updateStatusCommandHandler.handle(command, index, status);
 
         return ResponseEntity.status(HttpStatus.OK).body(orderDtos);
