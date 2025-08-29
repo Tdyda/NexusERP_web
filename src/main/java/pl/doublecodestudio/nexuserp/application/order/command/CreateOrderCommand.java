@@ -9,4 +9,5 @@ public class CreateOrderCommand {
     String batchId;
     List<String> materialIds;
     String comment;
+    String locationCode;
 }
