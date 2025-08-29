@@ -300,8 +300,12 @@ public class OrderService {
                 ));
 
         return grouped.values().stream()
-                .flatMap(prodLineMap -> prodLineMap.values().stream()) // Stream<List<Order>>
-                .mapToLong(List::size)
+                .mapToLong(Map::size)
                 .sum();
+
+//        return grouped.values().stream()
+//                .flatMap(prodLineMap -> prodLineMap.values().stream()) // Stream<List<Order>>
+//                .mapToLong(List::size)
+//                .sum();
     }
 }
