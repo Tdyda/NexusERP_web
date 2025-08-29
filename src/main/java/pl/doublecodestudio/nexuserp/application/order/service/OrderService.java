@@ -142,6 +142,13 @@ public class OrderService {
         MtlMaterial material = mtlMaterialRepository.findById(command.getIndex())
                 .orElseThrow(() -> new IllegalArgumentException("Material request with index " + command.getIndex() + " doesn't exists!"));
 
+        long ordersQuantity = this.countOrdersByLocation(command.getLocationCode());
+        log.info("Ilość zamówień {}", ordersQuantity);
+
+        if (ordersQuantity > 4){
+            throw new IllegalArgumentException("Zbyt wiele zamówień w statusie oczekującym lub w trakcie realizacji");
+        }
+
         Order order = Order.Create(
                 command.getIndex(),
                 material.getMaterialDesc(),
