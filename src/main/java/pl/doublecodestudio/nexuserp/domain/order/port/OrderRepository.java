@@ -12,7 +12,7 @@ public interface OrderRepository {
 
     List<Order> saveAll(List<Order> orders);
 
-    List<Order> findByIndex(String batchId, Pageable pageable);
+    List<Order> findByIndex(String batchId);
 
     Optional<Order> findByBatchIdAndIndex(String id, String index);
 
