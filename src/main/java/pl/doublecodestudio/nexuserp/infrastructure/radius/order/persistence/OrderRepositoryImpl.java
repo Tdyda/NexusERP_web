@@ -33,8 +33,8 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public List<Order> findByIndex(String index, Pageable pageable) {
-        return repo.findByIndex(index, pageable).stream()
+    public List<Order> findByIndex(String index) {
+        return repo.findByIndex(index).stream()
                 .filter(item -> !Objects.equals(item.getStatus(), "Zamknięte"))
                 .map(mapper::toDomain)
                 .toList();
