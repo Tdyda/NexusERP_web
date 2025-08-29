@@ -290,11 +290,10 @@ public class OrderService {
         return new ArrayList<>(byIndex.values());
     }
 
-    private Long countOrdersByLocation(String locationCode)
+    public Long countOrdersByLocation(String locationCode)
     {
-        if(locationCode == null) locationCode = "SK1";
         Map<String, Map<String, List<Order>>> grouped = orderRepository.findByLocation(locationCode).stream()
-                .filter(order -> !order.getStatus().equals("Zamknięte"))
+                .filter(order -> !order.getStatus().equals("Zamknięte") && !order.getStatus().equals("Ukończone"))
                 .collect(Collectors.groupingBy(
                         Order::getIndex,
                         Collectors.groupingBy(Order::getProdLine)

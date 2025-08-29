@@ -12,6 +12,7 @@ import pl.doublecodestudio.nexuserp.application.order.query.GetOrderByIndexQuery
 import pl.doublecodestudio.nexuserp.application.order.query.GetOrderByIndexQueryHandler;
 import pl.doublecodestudio.nexuserp.application.order.query.GetOrderByLocation;
 import pl.doublecodestudio.nexuserp.application.order.query.GetOrderByLocationHandler;
+import pl.doublecodestudio.nexuserp.application.order.service.OrderService;
 import pl.doublecodestudio.nexuserp.domain.order.entity.Order;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderDto;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderSummaryDto;
@@ -29,6 +30,8 @@ public class OrderController {
     private final UpdateStatusCommandHandler updateStatusCommandHandler;
     private final GetOrderByLocationHandler getOrderByLocationHandler;
 
+    private final OrderService orderService;
+
     @PostMapping
     @PreAuthorize("hasRole('ORDER_REQUESTS') or hasRole('ADMIN')")
     public ResponseEntity<List<OrderDto>> create(@RequestBody CreateOrderCommand command) {
@@ -41,6 +44,13 @@ public class OrderController {
     public ResponseEntity<List<OrderSummaryDto>> processPendingOrders(@RequestBody ProcessPendingOrdersCommand command) {
         List<OrderSummaryDto> orderDtos = processPendingOrdersCommandHandler.handle(command);
         return ResponseEntity.status(HttpStatus.OK).body(orderDtos);
+    }
+
+    @GetMapping("/count-orders")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Long> countOrders(@RequestParam String locationCode) {
+        orderService.countOrdersByLocation(locationCode);
+        return ResponseEntity.status(HttpStatus.OK).body(orderService.countOrdersByLocation(locationCode));
     }
 
     @PostMapping("/create-manual")
