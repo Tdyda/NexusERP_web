@@ -70,8 +70,12 @@ public class MaterialRequestSyncService {
         var check = materialDemandKittingRepository.findAll();
 
         return materialDemandKittingRepository.findAll().stream()
-                .filter(item -> item != null && item.getReleaseDate().isAfter(from) && item.getReleaseDate().isBefore(to))
+                .filter(Objects::nonNull)
+                .filter(item -> item.getReleaseDate() != null)
+                .filter(item -> item.getReleaseDate().isAfter(from))
+                .filter(item -> item.getReleaseDate().isBefore(to))
                 .toList();
+
     }
 
     private MaterialRequest buildMaterialRequestWithItems(List<MaterialDemandKitting> demands) {
