@@ -1,4 +1,8 @@
 package pl.doublecodestudio.nexuserp.application.substitute.query;
 
-public record GetAllSubstitutesQuery() {
+import org.springframework.data.domain.Pageable;
+
+import java.io.Serializable;
+
+public record GetAllSubstitutesQuery(Pageable pageable) {
 }
