@@ -15,8 +15,8 @@ import java.util.UUID;
 public class OrderHistory {
     private UUID groupUUID;
     private String index;
-    private Instant orderDateMin;
-    private Double quantitySum;
+    private Instant orderDate;
+    private Double quantity;
     private String name;
-    private String prodLineMax;
+    private String prodLine;
 }
