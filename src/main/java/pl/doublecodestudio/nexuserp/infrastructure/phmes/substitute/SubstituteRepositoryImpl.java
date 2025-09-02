@@ -1,6 +1,8 @@
 package pl.doublecodestudio.nexuserp.infrastructure.phmes.substitute;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import pl.doublecodestudio.nexuserp.domain.substitute.entity.Substitute;
 import pl.doublecodestudio.nexuserp.domain.substitute.port.SubstituteRepository;
@@ -12,6 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SubstituteRepositoryImpl implements SubstituteRepository {
     private final JpaSubstituteRepository repo;
+    private final SubstitutePersistenceMapper mapper;
 
     @Override
     public List<Substitute> findByBaseMaterialId(String baseMaterialId) {
@@ -25,5 +28,11 @@ public class SubstituteRepositoryImpl implements SubstituteRepository {
         return repo.findByBaseMaterialIdIn(baseIndexes).stream()
                 .map(item -> Substitute.create(item.getBaseMaterialId(), item.getSubstMaterialId())
                 ).toList();
+    }
+
+    @Override
+    public Page<Substitute> findAll(Pageable pageable) {
+        return repo.findAll(pageable)
+                .map(mapper::toDomain);
     }
 }
