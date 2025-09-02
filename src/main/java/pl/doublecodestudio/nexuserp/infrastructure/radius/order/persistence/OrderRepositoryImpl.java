@@ -1,9 +1,11 @@
 package pl.doublecodestudio.nexuserp.infrastructure.radius.order.persistence;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import pl.doublecodestudio.nexuserp.domain.order.entity.Order;
+import pl.doublecodestudio.nexuserp.domain.order.entity.OrderHistory;
 import pl.doublecodestudio.nexuserp.domain.order.port.OrderRepository;
 
 import java.time.Instant;
@@ -73,5 +75,10 @@ public class OrderRepositoryImpl implements OrderRepository {
         return repo.findByProdLine(location).stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public Page<OrderHistory> findByGroupUuidNotNull(Pageable pageable) {
+        return repo.findByGroupUUIDIsNotNull(pageable);
     }
 }

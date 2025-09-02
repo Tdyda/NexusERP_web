@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -56,4 +57,7 @@ public class JpaOrderEntity {
     @NotNull
     @Column(name = "BatchId", nullable = false)
     private String batchId;
+
+    @Column(name = "GroupUUID", nullable = true)
+    private UUID groupUUID;
 }

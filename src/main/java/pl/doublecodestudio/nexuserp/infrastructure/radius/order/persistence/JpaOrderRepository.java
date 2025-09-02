@@ -1,8 +1,10 @@
 package pl.doublecodestudio.nexuserp.infrastructure.radius.order.persistence;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import pl.doublecodestudio.nexuserp.domain.order.entity.Order;
+import org.springframework.data.jpa.repository.Query;
+import pl.doublecodestudio.nexuserp.domain.order.entity.OrderHistory;
 
 import java.time.Instant;
 import java.util.List;
@@ -22,4 +24,26 @@ public interface JpaOrderRepository extends JpaRepository<JpaOrderEntity, Long> 
     List<JpaOrderEntity> findByStatusAndIndex(String status, String index);
 
     List<JpaOrderEntity> findByProdLine(String prodLine);
+
+    @Query(
+            value = """
+                    select new pl.doublecodestudio.nexuserp.domain.order.entity.OrderHistory(
+                        o.groupUUID,
+                        o.index,
+                        min(o.orderDate),
+                        sum(cast(o.quantity as double)),
+                        max(o.name),
+                        max(o.prodLine)
+                    )
+                    from JpaOrderEntity o
+                    where o.groupUUID is not null
+                    group by o.groupUUID, o.index
+                    """,
+            countQuery = """
+                    select count(distinct o.groupUUID, o.index)
+                    from JpaOrderEntity o
+                    where o.groupUUID is not null
+                    """
+    )
+    Page<OrderHistory> findByGroupUUIDIsNotNull(Pageable pageable);
 }

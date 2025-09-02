@@ -1,7 +1,9 @@
 package pl.doublecodestudio.nexuserp.domain.order.port;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import pl.doublecodestudio.nexuserp.domain.order.entity.Order;
+import pl.doublecodestudio.nexuserp.domain.order.entity.OrderHistory;
 
 import java.time.Instant;
 import java.util.List;
@@ -23,4 +25,6 @@ public interface OrderRepository {
     List<Order> findByStatusAndIndex(String status, String index);
 
     List<Order> findByLocation(String location);
+
+    Page<OrderHistory> findByGroupUuidNotNull(Pageable pageable);
 }
