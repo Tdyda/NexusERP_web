@@ -12,6 +12,6 @@ public class GetMaterialRequestQueryHandler {
     private final MaterialRequestRepository repo;
 
     public PageResult<MaterialRequest> handle(GetMaterialRequestQuery query) {
-        return repo.findAll(query.getPageable(), query.getFilters());
+        return repo.findAll(query.pageable(), query.filters());
     }
 }

@@ -1,17 +1,13 @@
 package pl.doublecodestudio.nexuserp.interfaces.web.filter;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.ToString;
-
 import java.util.List;
 
-@Getter
-@AllArgsConstructor
-@ToString
-public class Filter {
-    private final String field;     // np. "batchId"
-    private final FilterOp op;      // np. CONTAINS
-    private final List<String> rawValues; // wartości w formie stringów z URL-a
+/**
+ * @param field     np. "batchId"
+ * @param op        np. CONTAINS
+ * @param rawValues wartości w formie stringów z URL-a
+ */
+
+public record Filter(String field, FilterOp op, List<String> rawValues) {
 }
 
