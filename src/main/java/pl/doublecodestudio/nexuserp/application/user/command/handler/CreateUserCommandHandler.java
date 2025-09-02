@@ -1,8 +1,9 @@
-package pl.doublecodestudio.nexuserp.application.user.command;
+package pl.doublecodestudio.nexuserp.application.user.command.handler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import pl.doublecodestudio.nexuserp.application.user.command.CreateUserCommand;
 import pl.doublecodestudio.nexuserp.application.user.service.UserService;
 import pl.doublecodestudio.nexuserp.interfaces.web.user.dto.UserDto;
 import pl.doublecodestudio.nexuserp.interfaces.web.user.mapper.UserMapperDto;
