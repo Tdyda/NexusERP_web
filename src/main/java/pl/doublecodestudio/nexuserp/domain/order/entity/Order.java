@@ -4,12 +4,15 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Slf4j
 public class Order {
     private Integer id;
     private String index;
@@ -22,6 +25,7 @@ public class Order {
     private String prodLine;
     private String client;
     private String batchId;
+    private UUID groupUUID;
 
     private Order() {
     }
@@ -79,9 +83,21 @@ public class Order {
     }
 
 
-    public static Order Update(String newStatus, Order existing) {
+    public static Order UpdateStatusAndAddUUID(String newStatus, UUID newGroupUUID, Order existing) {
+        log.info("New group UUID: {}", newGroupUUID);
+        if (newGroupUUID == null) {
+            throw new IllegalArgumentException("Nieprawidłowe UUID");
+        }
+
         return existing.toBuilder()
                 .status(newStatus)
+                .groupUUID(newGroupUUID)
                 .build();
+    }
+
+    public static void UpdateGroupUUID(UUID newGroupUUID, Order existing) {
+
+
+        existing.groupUUID = newGroupUUID;
     }
 }

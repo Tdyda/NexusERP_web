@@ -12,12 +12,10 @@ import pl.doublecodestudio.nexuserp.application.matarial_request.query.GetMateri
 import pl.doublecodestudio.nexuserp.application.matarial_request.query.GetMaterialRequestQuery;
 import pl.doublecodestudio.nexuserp.application.matarial_request.query.GetMaterialRequestQueryHandler;
 import pl.doublecodestudio.nexuserp.application.matarial_request.service.MaterialRequestSyncService;
-import pl.doublecodestudio.nexuserp.application.substitute.query.GetSubstituteByBaseMaterialIdQuery;
 import pl.doublecodestudio.nexuserp.domain.material_request.entity.MaterialRequest;
 import pl.doublecodestudio.nexuserp.interfaces.web.filter.Filter;
 import pl.doublecodestudio.nexuserp.interfaces.web.filter.QueryFilterParser;
 import pl.doublecodestudio.nexuserp.interfaces.web.page.PageResult;
-import pl.doublecodestudio.nexuserp.interfaces.web.substitute.dto.SubstituteDto;
 
 import java.util.List;
 

@@ -7,5 +7,6 @@ import pl.doublecodestudio.nexuserp.domain.mtl_material.entity.MtlMaterial;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface MtlMaterialPersistenceMapper {
     MtlMaterial toDomain(JpaMtlMaterialEntity entity);
+
     JpaMtlMaterialEntity toEntity(MtlMaterial domain);
 }

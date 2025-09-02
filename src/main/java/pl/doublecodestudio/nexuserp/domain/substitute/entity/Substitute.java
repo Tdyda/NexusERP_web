@@ -9,7 +9,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Substitute {
-    private Substitute() {}
+    private Substitute() {
+    }
 
     private String baseIndex;
     private String substituteIndex;
@@ -18,13 +19,13 @@ public class Substitute {
             String baseIndex,
             String substituteIndex
     ) {
-        if(baseIndex == null || substituteIndex == null)
+        if (baseIndex == null || substituteIndex == null)
             throw new NullPointerException("baseIndex or substituteIndex is null");
 
-        if(baseIndex.isEmpty() || substituteIndex.isEmpty())
+        if (baseIndex.isEmpty() || substituteIndex.isEmpty())
             throw new NullPointerException("baseIndex or substituteIndex is empty");
 
-        if(baseIndex.length() != 14 || substituteIndex.length() != 14)
+        if (baseIndex.length() != 14 || substituteIndex.length() != 14)
             throw new IllegalArgumentException("baseIndex or substituteIndex length should be 14");
 
         return Substitute.builder()

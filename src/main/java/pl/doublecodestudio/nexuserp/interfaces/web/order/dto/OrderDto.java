@@ -9,6 +9,8 @@ import java.time.Instant;
 @Setter
 @ToString
 @EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
 public class OrderDto {
     private Integer id;
     private String index;

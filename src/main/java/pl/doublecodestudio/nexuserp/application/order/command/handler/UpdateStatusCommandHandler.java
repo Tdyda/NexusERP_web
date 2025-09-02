@@ -1,7 +1,8 @@
-package pl.doublecodestudio.nexuserp.application.order.command;
+package pl.doublecodestudio.nexuserp.application.order.command.handler;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import pl.doublecodestudio.nexuserp.application.order.command.UpdateStatusCommand;
 import pl.doublecodestudio.nexuserp.application.order.service.OrderService;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderDto;
 

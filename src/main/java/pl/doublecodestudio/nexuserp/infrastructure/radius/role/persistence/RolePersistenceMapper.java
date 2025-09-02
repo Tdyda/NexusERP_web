@@ -12,12 +12,4 @@ public interface RolePersistenceMapper {
     default Role toEntity(JpaRoleEntity entity) {
         return Role.create(entity.getId(), entity.getName());
     }
-
-//    @IterableMapping(qualifiedByName = "toDomain")
-//    default Set<Role> toEntitySet(Set<JpaRoleEntity> entities) {
-//        if (entities == null) return Set.of();
-//        return entities.stream()
-//                .map(this::toEntity)
-//                .collect(Collectors.toSet());
-//    }
 }

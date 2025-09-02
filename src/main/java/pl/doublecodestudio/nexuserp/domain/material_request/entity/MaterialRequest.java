@@ -127,7 +127,7 @@ public class MaterialRequest {
         if (client == null || client.isEmpty()) {
             throw new IllegalArgumentException("client cannot be null or empty");
         }
-        if(quantity == null){
+        if (quantity == null) {
             throw new IllegalArgumentException("quantity cannot be null or empty");
         }
 

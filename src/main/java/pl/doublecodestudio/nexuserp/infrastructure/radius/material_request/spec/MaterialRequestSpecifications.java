@@ -37,9 +37,9 @@ public class MaterialRequestSpecifications {
 
         return allFilters.stream()
                 .map(f -> {
-                    String entityField = ALLOWED_FIELDS.get(f.getField());
+                    String entityField = ALLOWED_FIELDS.get(f.field());
                     if (entityField == null) {
-                        throw new IllegalArgumentException("Unsupported filter field: " + f.getField());
+                        throw new IllegalArgumentException("Unsupported filter field: " + f.field());
                     }
                     return toPredicate(entityField, f);
                 })
@@ -53,40 +53,40 @@ public class MaterialRequestSpecifications {
             Class<?> type = path.getJavaType();
 
             // Konwersje typów z rawValues
-            switch (f.getOp()) {
+            switch (f.op()) {
                 case EQ -> {
-                    Object v = convert(type, f.getRawValues().get(0));
+                    Object v = convert(type, f.rawValues().get(0));
                     return cb.equal(path, v);
                 }
                 case CONTAINS -> {
                     if (!String.class.equals(type)) {
                         throw new IllegalArgumentException("Operator 'contains' dostępny tylko dla String (" + entityField + ")");
                     }
-                    String v = "%" + f.getRawValues().get(0).toLowerCase(Locale.ROOT) + "%";
+                    String v = "%" + f.rawValues().get(0).toLowerCase(Locale.ROOT) + "%";
                     return cb.like(cb.lower(root.get(entityField)), v);
                 }
                 case IN -> {
                     CriteriaBuilder.In<Object> in = cb.in(path);
-                    for (String raw : f.getRawValues()) {
+                    for (String raw : f.rawValues()) {
                         in.value(convert(type, raw));
                     }
                     return in;
                 }
                 case GT -> {
-                    return buildCompare(cb, path, type, f.getRawValues().get(0), CompareOp.GT);
+                    return buildCompare(cb, path, type, f.rawValues().get(0), CompareOp.GT);
                 }
                 case GTE -> {
-                    return buildCompare(cb, path, type, f.getRawValues().get(0), CompareOp.GTE);
+                    return buildCompare(cb, path, type, f.rawValues().get(0), CompareOp.GTE);
                 }
                 case LT -> {
-                    return buildCompare(cb, path, type, f.getRawValues().get(0), CompareOp.LT);
+                    return buildCompare(cb, path, type, f.rawValues().get(0), CompareOp.LT);
                 }
                 case LTE -> {
-                    return buildCompare(cb, path, type, f.getRawValues().get(0), CompareOp.LTE);
+                    return buildCompare(cb, path, type, f.rawValues().get(0), CompareOp.LTE);
                 }
                 case BETWEEN -> {
-                    String from = f.getRawValues().get(0);
-                    String to = f.getRawValues().get(1);
+                    String from = f.rawValues().get(0);
+                    String to = f.rawValues().get(1);
                     if (Instant.class.equals(type)) {
                         Instant a = Instant.parse(from);
                         Instant b = Instant.parse(to);
@@ -106,7 +106,7 @@ public class MaterialRequestSpecifications {
                         throw new IllegalArgumentException("BETWEEN nieobsługiwany dla typu " + type.getSimpleName());
                     }
                 }
-                default -> throw new IllegalStateException("Nieobsługiwany operator: " + f.getOp());
+                default -> throw new IllegalStateException("Nieobsługiwany operator: " + f.op());
             }
         };
     }
