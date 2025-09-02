@@ -27,10 +27,23 @@ public class User {
         this.location = location;
     }
 
+    private User(UUID id, String username, String email, String password, Location location, Set<Role> roles) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.location = location;
+        this.roles.addAll(roles);
+    }
+
     public static User create(UUID id, String username, String email, String password, Location location, Set<Role> roles) {
         User user = new User(id, username, email, password, location);
         user.roles.addAll(roles);
 
         return user;
+    }
+
+    public static User withPassword(User existing, String newPassword) {
+        return new User(existing.getId(), existing.getUsername(), existing.getEmail(), newPassword, existing.getLocation(), existing.getRoles());
     }
 }

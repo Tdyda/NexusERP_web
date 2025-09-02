@@ -4,15 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pl.doublecodestudio.nexuserp.application.user.command.ChangeUserPasswordCommand;
 import pl.doublecodestudio.nexuserp.domain.location.entity.Location;
 import pl.doublecodestudio.nexuserp.domain.location.port.LocationRepository;
 import pl.doublecodestudio.nexuserp.domain.role.entity.Role;
 import pl.doublecodestudio.nexuserp.domain.role.port.RoleRepository;
 import pl.doublecodestudio.nexuserp.domain.user.entity.User;
 import pl.doublecodestudio.nexuserp.domain.user.port.UserRepository;
+import pl.doublecodestudio.nexuserp.exception.InvalidCredentialsException;
+import pl.doublecodestudio.nexuserp.exception.UserNotFoundException;
 import pl.doublecodestudio.nexuserp.interfaces.web.user.dto.LoginResponse;
 import pl.doublecodestudio.nexuserp.interfaces.web.user.dto.UserDto;
-import pl.doublecodestudio.nexuserp.interfaces.web.user.mapper.UserMapperDto;
 import pl.doublecodestudio.nexuserp.security.service.JwtService;
 
 import java.security.SecureRandom;
@@ -28,7 +30,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserMapperDto mapper;
     private final JwtService jwtService;
     private final LocationRepository locations;
 
@@ -57,7 +58,7 @@ public class UserService {
         boolean login = passwordEncoder.matches(password, user.getPassword());
 
         if (!login) {
-            throw new IllegalArgumentException("Wrong password");
+            throw new InvalidCredentialsException();
         }
 
         Set<String> roles = new HashSet<>();
@@ -82,6 +83,20 @@ public class UserService {
                 refreshToken,
                 userDto
         );
+    }
+
+    public User changePassword(ChangeUserPasswordCommand command) {
+        User user = userRepository.findByEmail(command.username())
+                .orElseThrow(UserNotFoundException::new);
+
+        if (!passwordEncoder.matches(command.oldPassword(), user.getPassword()))
+        {
+            throw new InvalidCredentialsException();
+        }
+        User updated = User.withPassword(user, passwordEncoder.encode(command.newPassword()));
+        userRepository.save(updated);
+
+        return updated;
     }
 
     private class TokenGenerator {
