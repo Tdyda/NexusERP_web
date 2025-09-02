@@ -23,8 +23,7 @@ public class GetOrderByIndexQueryHandler {
                 .filter(item -> !Objects.equals(item.getStatus(), "Ukończone"))
                 .map(mapper::toDto)
                 .toList();
-        if(list.isEmpty())
-        {
+        if (list.isEmpty()) {
             log.info("LIST IS EMPTY!");
         }
         list.forEach(item -> log.info(item.toString()));

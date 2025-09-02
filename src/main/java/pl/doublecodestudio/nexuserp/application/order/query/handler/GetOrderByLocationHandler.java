@@ -13,7 +13,7 @@ import java.util.List;
 public class GetOrderByLocationHandler {
     private final OrderService orderService;
 
-    public List<OrderDto> handle(GetOrderByLocation query){
+    public List<OrderDto> handle(GetOrderByLocation query) {
         return orderService.getAllOrdersByLocationAndStatus(query.location());
     }
 }

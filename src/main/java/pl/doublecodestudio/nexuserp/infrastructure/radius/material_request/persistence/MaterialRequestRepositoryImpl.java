@@ -64,7 +64,7 @@ public class MaterialRequestRepositoryImpl implements MaterialRequestRepository 
 
     @Override
     public List<MaterialRequest> findByBatchIdIn(Set<String> batchIds) {
-        if(batchIds == null || batchIds.isEmpty()){
+        if (batchIds == null || batchIds.isEmpty()) {
             return List.of();
         }
 

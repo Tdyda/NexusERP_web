@@ -11,8 +11,7 @@ import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderDto;
 public class CreateOrderManualCommandHandler {
     private final OrderService orderService;
 
-    public OrderDto handle(CreateOrderManualCommand command)
-    {
+    public OrderDto handle(CreateOrderManualCommand command) {
         return orderService.createOrderManual(command);
     }
 }

@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface JpaSubstituteRepository extends JpaRepository<XlnSubstitutesTomek, XlnSubstitutesTomekId> {
     List<XlnSubstitutesTomek> findByBaseMaterialId(String baseMaterialId);
+
     List<XlnSubstitutesTomek> findByBaseMaterialIdIn(Collection<String> baseIndexes);
 }

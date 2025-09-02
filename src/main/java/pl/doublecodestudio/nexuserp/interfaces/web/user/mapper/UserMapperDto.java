@@ -25,7 +25,7 @@ public interface UserMapperDto {
                 .collect(Collectors.toSet());
     }
 
-     default String map(Location location) {
-         return location == null ? null : location.code();
-     }
+    default String map(Location location) {
+        return location == null ? null : location.code();
+    }
 }

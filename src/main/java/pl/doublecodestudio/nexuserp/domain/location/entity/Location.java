@@ -1,7 +1,5 @@
 package pl.doublecodestudio.nexuserp.domain.location.entity;
 
-import lombok.EqualsAndHashCode;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -13,8 +11,12 @@ public record Location(String code) {
     }
 
     @JsonValue
-    public String json() { return code; }
+    public String json() {
+        return code;
+    }
 
     @JsonCreator
-    public static Location of(String code) { return new Location(code); }
+    public static Location of(String code) {
+        return new Location(code);
+    }
 }
