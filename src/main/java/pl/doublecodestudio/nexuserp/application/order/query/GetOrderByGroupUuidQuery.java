@@ -2,4 +2,5 @@ package pl.doublecodestudio.nexuserp.application.order.query;
 
 import org.springframework.data.domain.Pageable;
 
-public record GetOrderByGroupUuidQuery(Pageable pageable){}
+public record GetOrderByGroupUuidQuery(Pageable pageable) {
+}

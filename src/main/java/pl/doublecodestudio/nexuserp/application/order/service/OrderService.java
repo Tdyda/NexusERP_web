@@ -2,24 +2,25 @@ package pl.doublecodestudio.nexuserp.application.order.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pl.doublecodestudio.nexuserp.application.order.command.CreateOrderCommand;
 import pl.doublecodestudio.nexuserp.application.order.command.CreateOrderManualCommand;
 import pl.doublecodestudio.nexuserp.application.order.command.ProcessPendingOrdersCommand;
 import pl.doublecodestudio.nexuserp.application.substitute.service.SubstituteService;
-
 import pl.doublecodestudio.nexuserp.domain.material_request.entity.MaterialRequest;
 import pl.doublecodestudio.nexuserp.domain.material_request.entity.MaterialRequestItem;
 import pl.doublecodestudio.nexuserp.domain.material_request.port.MaterialRequestRepository;
 import pl.doublecodestudio.nexuserp.domain.mtl_material.entity.MtlMaterial;
 import pl.doublecodestudio.nexuserp.domain.mtl_material.port.MtlMaterialRepository;
 import pl.doublecodestudio.nexuserp.domain.order.entity.Order;
+import pl.doublecodestudio.nexuserp.domain.order.entity.OrderHistory;
 import pl.doublecodestudio.nexuserp.domain.order.port.OrderRepository;
-import pl.doublecodestudio.nexuserp.domain.substitute.port.SubstituteRepository;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderDto;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.dto.OrderSummaryDto;
 import pl.doublecodestudio.nexuserp.interfaces.web.order.mapper.OrderMapperDto;
+import pl.doublecodestudio.nexuserp.interfaces.web.page.PageResult;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -54,26 +55,13 @@ public class OrderService {
         long ordersQuantity = this.countOrdersByLocation(command.getLocationCode());
         log.info("Ilość zamówień {}", ordersQuantity);
 
-        if (ordersQuantity > 3){
+        if (ordersQuantity > 3) {
             throw new IllegalArgumentException("Zbyt wiele zamówień w statusie oczekującym lub w trakcie realizacji");
         }
 
 
         MaterialRequest mr = materialRequestRepository.findById(command.getBatchId()).orElseThrow(
                 () -> new IllegalArgumentException("Material request with this batchId doesn't exists!"));
-
-//        boolean containsAny = mr.getItems().stream().anyMatch(item ->
-//                command.getMaterialIds().contains(item.getMaterialId())
-//        );
-
-//        if (!containsAny) {
-//            throw new IllegalArgumentException("Material request with this batchId and materialIds doesn't exists!");
-//        }
-
-//        mr.getItems().forEach(item -> {log.info("mr get item: {}", item.getMaterialId());});
-//        command.getMaterialIds().forEach(id -> {
-//            log.info("Checking material request with id {}", id);
-//        });
 
         Set<String> allowedMaterialIds = new HashSet<>();
 
@@ -145,7 +133,7 @@ public class OrderService {
         long ordersQuantity = this.countOrdersByLocation(command.getLocationCode());
         log.info("Ilość zamówień {}", ordersQuantity);
 
-        if (ordersQuantity > 4){
+        if (ordersQuantity > 4) {
             throw new IllegalArgumentException("Zbyt wiele zamówień w statusie oczekującym lub w trakcie realizacji");
         }
 
@@ -181,6 +169,8 @@ public class OrderService {
 
         List<Order> updatedOrders = new ArrayList<>();
 
+        UUID uuid = UUID.randomUUID();
+
         List<OrderDto> result = records.stream()
                 .collect(Collectors.groupingBy(Order::getIndex))
                 .entrySet().stream()
@@ -189,9 +179,12 @@ public class OrderService {
                     List<Order> ordersWithSameIndex = entry.getValue();
 
                     List<Order> updatedGroup = ordersWithSameIndex.stream()
-                            .map(order -> order.toBuilder()
-                                    .status("W trakcie realizacji")
-                                    .build())
+                            .map(order -> Order.UpdateStatusAndAddUUID(
+                                            "W trakcie realizacji",
+                                            uuid,
+                                            order
+                                    )
+                            )
                             .toList();
 
                     updatedOrders.addAll(updatedGroup);
@@ -229,6 +222,10 @@ public class OrderService {
                     return dto;
                 })
                 .collect(Collectors.toList());
+
+        updatedOrders.forEach(order -> {
+            log.info("Updating order {}, groupUUID {}", order.getId(), order.getGroupUUID());
+        });
         orderRepository.saveAll(updatedOrders);
 
         return orderRepository
@@ -290,8 +287,7 @@ public class OrderService {
         return new ArrayList<>(byIndex.values());
     }
 
-    public Long countOrdersByLocation(String locationCode)
-    {
+    public Long countOrdersByLocation(String locationCode) {
         Map<String, Map<String, List<Order>>> grouped = orderRepository.findByLocation(locationCode).stream()
                 .filter(order -> !order.getStatus().equals("Zamknięte") && !order.getStatus().equals("Ukończone"))
                 .collect(Collectors.groupingBy(
@@ -302,10 +298,11 @@ public class OrderService {
         return grouped.values().stream()
                 .mapToLong(Map::size)
                 .sum();
-
-//        return grouped.values().stream()
-//                .flatMap(prodLineMap -> prodLineMap.values().stream()) // Stream<List<Order>>
-//                .mapToLong(List::size)
-//                .sum();
     }
+
+    public PageResult<OrderHistory> getHistory(Pageable pageable) {
+        Page<OrderHistory> page = orderRepository.findByGroupUuidNotNull(pageable);
+        return new PageResult<>(page.getContent(), page.getTotalElements(), page.getNumber(), page.getSize());
+    }
+
 }
