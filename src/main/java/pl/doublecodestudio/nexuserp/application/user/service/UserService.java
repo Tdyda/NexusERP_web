@@ -1,7 +1,11 @@
 package pl.doublecodestudio.nexuserp.application.user.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.doublecodestudio.nexuserp.application.user.command.ChangeUserPasswordCommand;
@@ -86,15 +90,22 @@ public class UserService {
     }
 
     public User changePassword(ChangeUserPasswordCommand command) {
-        User user = userRepository.findByEmail(command.username())
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            throw new AccessDeniedException("Brak uwierzytelnienia");
+        }
+
+        User user = userRepository.findByEmail(auth.getName())
                 .orElseThrow(UserNotFoundException::new);
 
-        if (!passwordEncoder.matches(command.oldPassword(), user.getPassword()))
+        if (!passwordEncoder.matches(command.oldP(), user.getPassword()))
         {
             throw new InvalidCredentialsException();
         }
-        User updated = User.withPassword(user, passwordEncoder.encode(command.newPassword()));
+        User updated = User.withPassword(user, passwordEncoder.encode(command.newP()));
         userRepository.save(updated);
+        log.info("User: {} changed password", user.getUsername());
 
         return updated;
     }
