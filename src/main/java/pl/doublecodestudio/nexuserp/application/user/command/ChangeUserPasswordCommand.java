@@ -1,4 +1,4 @@
 package pl.doublecodestudio.nexuserp.application.user.command;
 
-public record ChangeUserPasswordCommand(String username, String oldPassword, String newPassword) {
+public record ChangeUserPasswordCommand(String oldP, String newP) {
 }
