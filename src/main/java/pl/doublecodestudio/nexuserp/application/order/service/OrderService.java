@@ -163,6 +163,9 @@ public class OrderService {
 
         List<Order> records = orderRepository.findByStatusAndOrderDateLessThanEqual(command.getStatus(), instant);
 
+        if(records.isEmpty()) {
+            log.info("No orders in status Oczekujące found");
+        }
         records.forEach(order -> {
             log.info("Processing order {}", order.getId());
         });
@@ -229,7 +232,7 @@ public class OrderService {
         orderRepository.saveAll(updatedOrders);
 
         return orderRepository
-                .findByStatus("W trakcie realizacji")
+                .findByStatusIn(List.of("W trakcie realizacji", "Przekazane"))
                 .stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toMap(
@@ -237,7 +240,7 @@ public class OrderService {
                         dto -> OrderSummaryDto.builder()
                                 .index(dto.getIndex())
                                 .orderDate(dto.getOrderDate())
-                                .status("W trakcie realizacji")
+                                .status(dto.getStatus())
                                 .hasComment(dto.isHasComment())
                                 .name(dto.getName())
                                 .quantity(dto.getQuantity() == null ? 0d : dto.getQuantity())
