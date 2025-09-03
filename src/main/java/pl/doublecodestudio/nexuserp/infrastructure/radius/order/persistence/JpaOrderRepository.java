@@ -17,6 +17,8 @@ public interface JpaOrderRepository extends JpaRepository<JpaOrderEntity, Long> 
 
     List<JpaOrderEntity> findByStatus(String status);
 
+    List<JpaOrderEntity> findByStatusIn(List<String> statuses);
+
     List<JpaOrderEntity> findByIndex(String index);
 
     List<JpaOrderEntity> findByStatusAndOrderDateLessThanEqual(String status, Instant orderDate);
