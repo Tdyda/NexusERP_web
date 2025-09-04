@@ -85,7 +85,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public Page<OrderHistory> findByGroupUuidNotNull(Pageable pageable) {
-        return repo.findByGroupUUIDIsNotNull(pageable);
+    public Page<OrderHistory> findByGroupUuidNotNullAndStatusIn(Pageable pageable, List<String> statuses) {
+        return repo.findByGroupUUIDIsNotNullAndStatusIn(pageable, statuses);
     }
 }

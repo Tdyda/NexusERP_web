@@ -4,9 +4,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import pl.doublecodestudio.nexuserp.domain.order.entity.OrderHistory;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,17 +37,28 @@ public interface JpaOrderRepository extends JpaRepository<JpaOrderEntity, Long> 
                         min(o.orderDate),
                         sum(cast(o.quantity as double)),
                         max(o.name),
-                        max(o.prodLine)
+                        max(o.prodLine),
+                        "Historyczne"
                     )
                     from JpaOrderEntity o
                     where o.groupUUID is not null
+                        and (
+                                :#{#statuses == null || #statuses.isEmpty()} = true
+                                or o.status in :#{#statuses}
+                              )
                     group by o.groupUUID, o.index
                     """,
             countQuery = """
                     select count(distinct o.groupUUID, o.index)
                     from JpaOrderEntity o
                     where o.groupUUID is not null
+                        and (
+                                :#{#statuses == null || #statuses.isEmpty()} = true
+                                or o.status in :#{#statuses}
+                              )
                     """
     )
-    Page<OrderHistory> findByGroupUUIDIsNotNull(Pageable pageable);
+    Page<OrderHistory> findByGroupUUIDIsNotNullAndStatusIn(
+            Pageable pageable,
+            @Param("statuses") Collection<String> statuses);
 }
