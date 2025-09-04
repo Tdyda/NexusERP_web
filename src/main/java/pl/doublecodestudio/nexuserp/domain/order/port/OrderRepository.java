@@ -28,5 +28,5 @@ public interface OrderRepository {
 
     List<Order> findByLocation(String location);
 
-    Page<OrderHistory> findByGroupUuidNotNull(Pageable pageable);
+    Page<OrderHistory> findByGroupUuidNotNullAndStatusIn(Pageable pageable, List<String> statuses);
 }

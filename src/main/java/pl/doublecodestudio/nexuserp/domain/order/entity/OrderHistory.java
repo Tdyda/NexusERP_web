@@ -19,4 +19,5 @@ public class OrderHistory {
     private Double quantity;
     private String name;
     private String prodLine;
+    private String status;
 }
