@@ -304,7 +304,7 @@ public class OrderService {
     }
 
     public PageResult<OrderHistory> getHistory(Pageable pageable) {
-        Page<OrderHistory> page = orderRepository.findByGroupUuidNotNull(pageable);
+        Page<OrderHistory> page = orderRepository.findByGroupUuidNotNullAndStatusIn(pageable, List.of("Zamknięte", "Ukończone"));
         return new PageResult<>(page.getContent(), page.getTotalElements(), page.getNumber(), page.getSize());
     }
 
