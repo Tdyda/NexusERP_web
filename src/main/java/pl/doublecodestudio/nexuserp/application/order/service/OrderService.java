@@ -52,12 +52,12 @@ public class OrderService {
             }
         });
 
-        long ordersQuantity = this.countOrdersByLocation(command.getLocationCode());
-        log.info("Ilość zamówień {}", ordersQuantity);
-
-        if (ordersQuantity > 3) {
-            throw new IllegalArgumentException("Zbyt wiele zamówień w statusie oczekującym lub w trakcie realizacji");
-        }
+//        long ordersQuantity = this.countOrdersByLocation(command.getLocationCode());
+//        log.info("Ilość zamówień {}", ordersQuantity);
+//
+//        if (ordersQuantity > 3) {
+//            throw new IllegalArgumentException("Zbyt wiele zamówień w statusie oczekującym lub w trakcie realizacji");
+//        }
 
 
         MaterialRequest mr = materialRequestRepository.findById(command.getBatchId()).orElseThrow(
